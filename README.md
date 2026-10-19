@@ -10,7 +10,7 @@ OpenViCloud portal (API tokens page).
 | Kind | Name |
 |---|---|
 | Data source | `openvicloud_zones`, `openvicloud_templates`, `openvicloud_vm_offerings`, `openvicloud_volume_offerings` |
-| Resource | `openvicloud_network`, `openvicloud_firewall_rule` |
+| Resource | `openvicloud_network`, `openvicloud_firewall_rule`, `openvicloud_ssh_key`, `openvicloud_vm`, `openvicloud_volume`, `openvicloud_volume_attachment` |
 
 ```hcl
 terraform {
@@ -34,9 +34,41 @@ resource "openvicloud_firewall_rule" "ssh" {
   end_port   = 22
   cidr       = "0.0.0.0/0"
 }
+
+data "openvicloud_templates" "here" { zone_id = "singapore01" }
+
+resource "openvicloud_ssh_key" "me" {
+  name       = "me"
+  public_key = file("~/.ssh/id_ed25519.pub")
+}
+
+resource "openvicloud_vm" "web" {
+  name           = "web-1"
+  zone_id        = "singapore01"
+  network_id     = openvicloud_network.web.id
+  template_id    = data.openvicloud_templates.here.templates[0].id
+  vm_offering_id = "s"
+  ssh_key_ids    = [openvicloud_ssh_key.me.id]
+}
+
+resource "openvicloud_volume" "data" {
+  name               = "data"
+  zone_id            = "singapore01"
+  volume_offering_id = "standard"
+  size_gb            = 20
+}
+
+resource "openvicloud_volume_attachment" "data" {
+  volume_id = openvicloud_volume.data.id
+  vm_id     = openvicloud_vm.web.id
+}
 ```
 
-Creates and deletes wait until OpenViCloud has finished them on the cloud, which can take a couple of minutes.
+Creates and deletes wait until OpenViCloud has finished them on the cloud, which can take a couple of minutes; a VM
+is created when it is Running or Ready.
+
+Terraform declares what exists, not whether a VM is on: stop and start a VM with the `openvicloud` CLI or the
+portal, and Terraform leaves it as it is. Only a VM's name changes in place; any other change replaces the VM.
 
 ## Develop
 

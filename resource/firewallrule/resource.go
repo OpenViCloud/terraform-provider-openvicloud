@@ -208,6 +208,22 @@ func (r *firewallRule) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 	networkId, id := state.NetworkId.ValueString(), state.Id.ValueString()
+	// The API refuses a delete while another request on the rule is pending (a create that timed out here, an apply
+	// interrupted): wait it out first, so destroy and replace work on a tainted rule.
+	err := wait.Until(ctx, realClock, timeout, interval, func(ctx context.Context) (bool, error) {
+		rules, found, err := r.list(ctx, networkId)
+		if err != nil {
+			return false, nil
+		}
+		if !found {
+			return true, nil
+		}
+		return Deletable(Find(rules, id)), nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Waiting for the firewall rule's pending request failed", err.Error())
+		return
+	}
 	response, err := r.client.TitanInfrastructureEndpointsNetworkDeleteFirewallRuleEndpointWithResponse(ctx, networkId, id)
 	if err != nil {
 		resp.Diagnostics.AddError("Deleting the firewall rule failed", err.Error())

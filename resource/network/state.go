@@ -41,3 +41,9 @@ func Gone(status int, n *api.NetworkQueryResult) (bool, error) {
 	}
 	return false, nil
 }
+
+// Deletable reports whether the API takes a delete now: it refuses one while the create is pending. A pending delete is
+// repeated; a network not found needs no wait.
+func Deletable(n *api.NetworkQueryResult) bool {
+	return n == nil || n.Transition == nil || *n.Transition == api.NetworkTransitionDeleting
+}

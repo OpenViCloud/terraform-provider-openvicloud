@@ -73,3 +73,22 @@ func TestGone_DeleteGivenUp_FailsWithTheReason(t *testing.T) {
 		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
+
+func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
+	for _, transition := range []*api.NetworkTransition{nil, ptr(api.NetworkTransitionDeleting)} {
+		n := aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatusCreated), transition)
+		if !Deletable(&n) {
+			t.Fatalf("transition %v", transition)
+		}
+	}
+	if !Deletable(nil) {
+		t.Fatal("a network not found needs no wait")
+	}
+}
+
+func TestDeletable_WhileCreating_Waits(t *testing.T) {
+	n := aNetwork(api.CurrentExistenceNotCreated, nil, ptr(api.NetworkTransitionCreating))
+	if Deletable(&n) {
+		t.Fatal("the API refuses to delete a network whose create is pending")
+	}
+}

@@ -127,19 +127,7 @@ func TestAccNetworkAndRules_CreateImportRenameDestroy(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { preCheck(t) },
 		ProtoV6ProviderFactories: factories,
-		CheckDestroy: func(s *terraform.State) error {
-			response, err := client.TitanInfrastructureEndpointsNetworkGetNetworkEndpointWithResponse(context.Background(), networkId)
-			if err != nil {
-				return err
-			}
-			if response.StatusCode() == http.StatusNotFound {
-				return nil
-			}
-			if response.JSON200 == nil || response.JSON200.CurrentExistence == nil || *response.JSON200.CurrentExistence != api.CurrentExistenceDeleted {
-				return fmt.Errorf("network %s is not Deleted after destroy", networkId)
-			}
-			return nil
-		},
+		CheckDestroy:             func(s *terraform.State) error { return leftovers(client, name) },
 		Steps: []resource.TestStep{
 			{
 				Config: networkConfig(name),

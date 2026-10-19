@@ -71,3 +71,22 @@ func TestImportId_IsNetworkSlashRule(t *testing.T) {
 		}
 	}
 }
+
+func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
+	for _, transition := range []*api.FirewallRuleTransition{nil, ptr(api.FirewallRuleTransitionDeleting)} {
+		rule := aRule("r", api.CurrentExistenceExists, transition)
+		if !Deletable(&rule) {
+			t.Fatalf("transition %v", transition)
+		}
+	}
+	if !Deletable(nil) {
+		t.Fatal("a rule no longer listed needs no wait")
+	}
+}
+
+func TestDeletable_WhileCreating_Waits(t *testing.T) {
+	rule := aRule("r", api.CurrentExistenceNotCreated, ptr(api.FirewallRuleTransitionCreating))
+	if Deletable(&rule) {
+		t.Fatal("the API refuses to delete a rule whose create is pending")
+	}
+}

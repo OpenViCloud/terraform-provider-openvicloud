@@ -1,0 +1,4068 @@
+{
+  "x-generator": "NSwag v14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Titan API",
+    "version": "v1"
+  },
+  "paths": {
+    "/v1/tenant/wallet": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsWalletGetWalletEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/wallet/statement": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsWalletGetWalletStatementEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletStatementQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}/snapshots": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeSnapshotsCreateVolumeSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateVolumeSnapshotBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVolumeSnapshotBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVolumeSnapshotCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeSnapshotsListVolumeSnapshotsEndpoint",
+        "parameters": [
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VolumeSnapshotQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}/snapshots/{snapshotId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeSnapshotsDeleteVolumeSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}/snapshots/{snapshotId}/restore": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeSnapshotsRestoreVolumeSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "RestoreVolumeSnapshotBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreVolumeSnapshotBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreVolumeSnapshotCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}/attach": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeAttachVolumeEndpoint",
+        "parameters": [
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "AttachVolumeBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachVolumeBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeCreateVolumeEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateVolumeCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVolumeCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVolumeCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeListVolumesEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VolumeQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeDeleteVolumeEndpoint",
+        "parameters": [
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/volumes/{volumeId}/detach": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVolumeDetachVolumeEndpoint",
+        "parameters": [
+          {
+            "name": "volumeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/snapshots": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmSnapshotsCreateSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateSnapshotBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSnapshotBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVmSnapshotCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmSnapshotsListSnapshotsEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VmSnapshotQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/snapshots/{snapshotId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmSnapshotsDeleteSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/snapshots/{snapshotId}/revert": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmSnapshotsRevertSnapshotEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmCreateVmEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateVmCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVmCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVmCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmListVmsEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VmQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmDeleteVmEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmGetVmEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VmQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmUpdateVmEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "RenameVmBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameVmBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/start": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmStartVmEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/stop": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsVmStopVmEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/topups": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsTopUpCreateTopUpEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "RequestTopUpCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTopUpCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestTopUpCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsTopUpListMyTopUpsEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TopUpQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsTenantGetTenantEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/members": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsTenantListMembersEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantMemberQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/ssh-keys": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsSshKeyAddSshKeyEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "AddSshKeyCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSshKeyCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSshKeyCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsSshKeyListSshKeysEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SshKeyQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/ssh-keys/{sshKeyId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsSshKeyDeleteSshKeyEndpoint",
+        "parameters": [
+          {
+            "name": "sshKeyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/networks/{networkId}/firewall-rules": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkCreateFirewallRuleEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateFirewallRuleRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFirewallRuleRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFirewallRuleCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkListFirewallRulesEndpoint",
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FirewallRuleQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/networks": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkCreateNetworkEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateNetworkCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNetworkCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateNetworkCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkListNetworksEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NetworkQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/networks/{networkId}/firewall-rules/{ruleId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkDeleteFirewallRuleEndpoint",
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/networks/{networkId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkDeleteNetworkEndpoint",
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkGetNetworkEndpoint",
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsNetworkRenameNetworkEndpoint",
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "RenameNetworkRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameNetworkRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/load-balancers": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerCreateLoadBalancerEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateLoadBalancerCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLoadBalancerCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateLoadBalancerCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerListLoadBalancersEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LoadBalancerQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/load-balancers/{loadBalancerId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerDeleteLoadBalancerEndpoint",
+        "parameters": [
+          {
+            "name": "loadBalancerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpoint",
+        "parameters": [
+          {
+            "name": "loadBalancerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoadBalancerQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpoint",
+        "parameters": [
+          {
+            "name": "loadBalancerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "UpdateLoadBalancerBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLoadBalancerBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/legal/consent-status": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLegalGetConsentStatusEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentStatusQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/legal/document": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLegalGetLegalDocumentEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentQueryResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/legal/acceptance": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLegalRecordAcceptanceEndpoint",
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/zones/{zoneId}/clusters": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListClustersEndpoint",
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClusterInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/os-images": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListOsImagesEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OsImageInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/templates": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListTemplatesEndpoint",
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/vm-offerings": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListVmOfferingsEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VmOfferingQueryResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/volume-offerings": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListVolumeOfferingsEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VolumeOfferingQueryResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/zones": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsCatalogListZonesEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ZoneInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenant/billing/summary": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsBillingGetTenantBillingSummaryEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantBillingSummaryQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/billing/invoices/{invoiceId}": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsBillingGetTenantInvoiceEndpoint",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDetailQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/vms/{vmId}/cost": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsBillingGetVmCostEndpoint",
+        "parameters": [
+          {
+            "name": "vmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VmCostQueryResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/billing/invoices": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsBillingListTenantInvoicesEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvoiceQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/billing/invoices/{invoiceId}/pay": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsBillingPayTenantInvoiceEndpoint",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "202": {
+            "description": "Accepted"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/api-tokens": {
+      "post": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsApiTokenCreateApiTokenEndpoint",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "One value per logical submission; a retry with the same value replays the first response.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateApiTokenCommand",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiTokenCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateApiTokenCommandResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsApiTokenListApiTokensEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiTokenQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/api-tokens/{apiTokenId}": {
+      "delete": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsApiTokenDeleteApiTokenEndpoint",
+        "parameters": [
+          {
+            "name": "apiTokenId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/tenant/activity": {
+      "get": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsActivityGetActivityEndpoint",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityEventQueryResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WalletQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "balance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "WalletStatementQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "openingBalance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "closingBalance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletStatementLine"
+            }
+          }
+        }
+      },
+      "WalletStatementLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "runningBalance": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "CreateVolumeSnapshotCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateVolumeSnapshotBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": false
+          }
+        }
+      },
+      "VolumeSnapshotQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "volumeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VolumeSnapshotTransition"
+              }
+            ]
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "CurrentExistence": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "NotCreated",
+          "Exists",
+          "NotFound",
+          "Deleted"
+        ],
+        "enum": [
+          "NotCreated",
+          "Exists",
+          "NotFound",
+          "Deleted"
+        ]
+      },
+      "DesiredExistence": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Exists",
+          "Deleted"
+        ],
+        "enum": [
+          "Exists",
+          "Deleted"
+        ]
+      },
+      "VolumeSnapshotTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Deleting"
+        ]
+      },
+      "RestoreVolumeSnapshotCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "newVolumeId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "RestoreVolumeSnapshotBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": false
+          }
+        }
+      },
+      "AttachVolumeBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "vmId"
+        ],
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          }
+        }
+      },
+      "CreateVolumeCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "volumeId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateVolumeCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "volumeOfferingId",
+          "zoneId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": false
+          },
+          "volumeOfferingId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "zoneId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "sizeGb": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "exclusiveMinimum": true
+          }
+        }
+      },
+      "VolumeQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "currentAttachedVmId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "currentAttachedElsewhere": {
+            "type": "boolean"
+          },
+          "desiredAttachedVmId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VolumeTransition"
+              }
+            ]
+          },
+          "zoneId": {
+            "type": "string"
+          },
+          "volumeOfferingId": {
+            "type": "string"
+          },
+          "sizeGb": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "VolumeTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Attaching",
+          "Detaching",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Attaching",
+          "Detaching",
+          "Deleting"
+        ]
+      },
+      "CreateVmSnapshotCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateSnapshotBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": false
+          }
+        }
+      },
+      "VmSnapshotQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VmSnapshotTransition"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "VmSnapshotTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Reverting",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Reverting",
+          "Deleting"
+        ]
+      },
+      "CreateVmCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateVmCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "networkId",
+          "vmOfferingId",
+          "templateId",
+          "zoneId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$",
+            "nullable": false
+          },
+          "networkId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "vmOfferingId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "templateId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "zoneId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "diskSizeGb": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true,
+            "exclusiveMinimum": true
+          },
+          "userData": {
+            "type": "string",
+            "nullable": true
+          },
+          "sshKeyIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        }
+      },
+      "VmQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currentState": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VmState"
+              }
+            ]
+          },
+          "desiredState": {
+            "$ref": "#/components/schemas/VmDesiredState"
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VmTransition"
+              }
+            ]
+          },
+          "ipAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "networkId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "vmOfferingId": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "zoneId": {
+            "type": "string"
+          },
+          "diskSizeGb": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userData": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publicIpv6Address": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "VmState": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Running",
+          "Ready",
+          "Stopped",
+          "Frozen",
+          "Error"
+        ],
+        "enum": [
+          "Running",
+          "Ready",
+          "Stopped",
+          "Frozen",
+          "Error"
+        ]
+      },
+      "VmDesiredState": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Running",
+          "Stopped"
+        ],
+        "enum": [
+          "Running",
+          "Stopped"
+        ]
+      },
+      "VmTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Starting",
+          "Stopping",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Starting",
+          "Stopping",
+          "Deleting"
+        ]
+      },
+      "RenameVmBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$",
+            "nullable": false
+          }
+        }
+      },
+      "RequestTopUpCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "topUpId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "RequestTopUpCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "decimal",
+            "minimum": 0.0,
+            "exclusiveMinimum": true
+          }
+        }
+      },
+      "TopUpQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TopUpStatus"
+          },
+          "paymentRef": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "confirmedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "TopUpStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Confirmed",
+          "Failed"
+        ],
+        "enum": [
+          "Pending",
+          "Confirmed",
+          "Failed"
+        ]
+      },
+      "TenantQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TenantStatus"
+          },
+          "maxVms": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxNetworks": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "debtCeiling": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "maxVolumes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxPublicIpv6": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TenantStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "PendingApproval",
+          "Active",
+          "Suspended"
+        ],
+        "enum": [
+          "PendingApproval",
+          "Active",
+          "Suspended"
+        ]
+      },
+      "TenantMemberQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "keycloakUserId": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AddSshKeyCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "AddSshKeyCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          }
+        }
+      },
+      "SshKeyQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateFirewallRuleCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateFirewallRuleRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "direction",
+          "protocol",
+          "startPort",
+          "endPort",
+          "cidr"
+        ],
+        "properties": {
+          "direction": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "startPort": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "nullable": false
+          },
+          "endPort": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "nullable": false
+          },
+          "cidr": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          }
+        }
+      },
+      "CreateNetworkCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "networkId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateNetworkCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "zoneId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+            "nullable": false
+          },
+          "zoneId": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          },
+          "cidr": {
+            "type": "string",
+            "pattern": "^\\d{1,3}(\\.\\d{1,3}){3}/\\d{1,2}$",
+            "nullable": true
+          },
+          "defaultIngressPolicy": {
+            "$ref": "#/components/schemas/FirewallPolicy"
+          },
+          "defaultEgressPolicy": {
+            "$ref": "#/components/schemas/FirewallPolicy"
+          },
+          "enablePublicIpv6": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FirewallPolicy": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Allow",
+          "Deny"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "NetworkQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "zoneId": {
+            "type": "string"
+          },
+          "cidr": {
+            "type": "string",
+            "nullable": true
+          },
+          "gateway": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentState": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NetworkStatus"
+              }
+            ]
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NetworkTransition"
+              }
+            ]
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "defaultIngressPolicy": {
+            "type": "string"
+          },
+          "defaultEgressPolicy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publicIpv6Subnet": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "NetworkStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Created",
+          "Errored",
+          "Unknown",
+          "Unavailable"
+        ],
+        "enum": [
+          "Pending",
+          "Created",
+          "Errored",
+          "Unknown",
+          "Unavailable"
+        ]
+      },
+      "NetworkTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Deleting"
+        ]
+      },
+      "FirewallRuleQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "startPort": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "endPort": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "cidr": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentState": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FirewallRuleState"
+              }
+            ]
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FirewallRuleTransition"
+              }
+            ]
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FirewallRuleState": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "enabled",
+          "disabled",
+          "logged"
+        ],
+        "enum": [
+          "enabled",
+          "disabled",
+          "logged"
+        ]
+      },
+      "FirewallRuleTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Deleting"
+        ]
+      },
+      "RenameNetworkRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+            "nullable": false
+          }
+        }
+      },
+      "CreateLoadBalancerCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "loadBalancerId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateLoadBalancerCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "networkId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+            "nullable": false
+          },
+          "networkId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "listeners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerListenerInput"
+            }
+          },
+          "backends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerBackendInput"
+            }
+          }
+        }
+      },
+      "LoadBalancerListenerInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "protocol": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "targetPort": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LoadBalancerBackendInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "LoadBalancerQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "zoneId": {
+            "type": "string"
+          },
+          "vip": {
+            "type": "string"
+          },
+          "listeners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerListenerQueryResult"
+            }
+          },
+          "backends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerBackendQueryResult"
+            }
+          },
+          "currentExistence": {
+            "$ref": "#/components/schemas/CurrentExistence"
+          },
+          "desiredExistence": {
+            "$ref": "#/components/schemas/DesiredExistence"
+          },
+          "transition": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoadBalancerTransition"
+              }
+            ]
+          },
+          "requestFailureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestFailedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LoadBalancerListenerQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "protocol": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "targetPort": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LoadBalancerBackendQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "LoadBalancerTransition": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Creating",
+          "Updating",
+          "Deleting"
+        ],
+        "enum": [
+          "Creating",
+          "Updating",
+          "Deleting"
+        ]
+      },
+      "UpdateLoadBalancerBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "listeners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerListenerInput"
+            }
+          },
+          "backends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoadBalancerBackendInput"
+            }
+          }
+        }
+      },
+      "ConsentStatusQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mustAcceptTerms": {
+            "type": "boolean"
+          },
+          "documentKey": {
+            "type": "string"
+          },
+          "documentVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "LegalDocumentQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lang": {
+            "type": "string"
+          }
+        }
+      },
+      "ClusterInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ListClustersRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "OsImageInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sizeGb": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TemplateQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "os": {
+            "type": "string"
+          },
+          "diskGb": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "ListTemplatesRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "VmOfferingQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "cpu": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "vcpu": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "memoryMb": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pricePerHour": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "VolumeOfferingQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sizeGb": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isCustomized": {
+            "type": "boolean"
+          },
+          "pricePerGbPerHour": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "ZoneInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "TenantBillingSummaryQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "computeCost": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "storageCost": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "perVm": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VmCostSummaryLine"
+            }
+          }
+        }
+      },
+      "VmCostSummaryLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "vmName": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "InvoiceDetailQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "periodYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "periodMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvoiceDisplayStatus"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paidBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceItemLine"
+            }
+          },
+          "paymentState": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "InvoiceDisplayStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "New",
+          "Paid",
+          "Settled",
+          "Overdue"
+        ],
+        "enum": [
+          "New",
+          "Paid",
+          "Settled",
+          "Overdue"
+        ]
+      },
+      "InvoiceItemLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "VmCostQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vmId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "month": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "breakdown": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageBreakdownLine"
+            }
+          }
+        }
+      },
+      "UsageBreakdownLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usageType": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "InvoiceQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "periodYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "periodMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvoiceDisplayStatus"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paidBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "paymentState": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateApiTokenCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "apiTokenId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "CreateApiTokenCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expiresInDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "ApiTokenQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ActivityEventQueryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "action": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "JWTBearerAuth": {
+        "type": "http",
+        "description": "Enter a JWT token to authorize the requests...",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

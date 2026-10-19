@@ -28,6 +28,20 @@ jobs:
           go generate ./api/
           git diff --exit-code -- api/
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      # The registry pages are generated from the schema descriptions and examples/: a schema change must carry
+      # its regenerated page.
+      - name: Registry docs match the schema
+        run: |
+          terraform fmt -recursive -check examples
+          go tool tfplugindocs generate --provider-name openvicloud
+          go tool tfplugindocs validate --provider-name openvicloud
+          git status --porcelain -- docs/
+          test -z "$(git status --porcelain -- docs/)"
+
       - name: Format
         run: test -z "$(gofmt -l .)"
 

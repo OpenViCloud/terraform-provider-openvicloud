@@ -1,0 +1,51 @@
+name: Release
+
+# A tag vX.Y.Z publishes the provider: goreleaser builds the zips, writes SHA256SUMS and signs it with the OpenViCloud
+# release key (.goreleaser.yaml). The job runs in the GitHub environment `release`, which holds the key and waits for
+# its reviewer to approve; only admins can push v* tags. A writer who is not an admin, or a leaked CI token, cannot
+# publish alone; the admin who is also the reviewer can, so that account is the one to protect.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Import the release key
+        id: gpg
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      # The public key both registries hold is this one; another key in the secret must not sign a release.
+      - name: The key is the OpenViCloud release key
+        env:
+          FINGERPRINT: ${{ steps.gpg.outputs.fingerprint }}
+        run: test "$FINGERPRINT" = "BB74B8ECF2BAA2321296E3BA62009A5A7C779F46"
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.gpg.outputs.fingerprint }}

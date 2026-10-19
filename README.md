@@ -91,6 +91,12 @@ resource "openvicloud_load_balancer" "web" {
   destroy resources named `tfacc-<random>`.
 - `scripts/sync-spec.sh <commit>`: copy the API contract from a commit of OpenViCloud/titan and regenerate the client;
   `api/SOURCE` records the commit.
+- `go tool tfplugindocs generate --provider-name openvicloud`: regenerate the registry pages in `docs/` from the
+  schema descriptions and `examples/`; CI fails when they are out of date.
+- Release: a tag `vX.Y.Z` runs `.github/workflows/release.yml`, which waits for approval in the GitHub environment
+  `release` (its reviewer approves), then builds the zips with goreleaser and signs `SHA256SUMS` with the OpenViCloud
+  release key (fingerprint `BB74B8ECF2BAA2321296E3BA62009A5A7C779F46`). Only admins can create, move or delete `v*`
+  tags.
 - Use a local build: `go build -o <dir>/terraform-provider-openvicloud .` and a CLI configuration with
   `provider_installation { dev_overrides { "openvicloud/openvicloud" = "<dir>" } direct {} }`.
 

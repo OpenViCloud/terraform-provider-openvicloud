@@ -49,7 +49,7 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
-// A create Incus refused before the volume had an id is deleted on the spot: the volume leaves the list.
+// Someone deleted it while the create was still waiting: the volume leaves the list.
 func TestCreated_LeftTheList_Fails(t *testing.T) {
 	_, err := Created(nil)
 	if err == nil {

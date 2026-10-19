@@ -40,11 +40,11 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
-// A create that failed before Incus had it is deleted on the spot.
-func TestCreated_DeletedOnTheSpot_Fails(t *testing.T) {
+// Someone deleted it while the create was still waiting.
+func TestCreated_DeletedBeforeTheCreateFinished_Fails(t *testing.T) {
 	_, err := Created(aLoadBalancer(api.CurrentExistenceDeleted, nil))
 	if err == nil {
-		t.Fatal("a load balancer deleted on the spot is not created")
+		t.Fatal("a load balancer deleted before its create finished is not created")
 	}
 }
 

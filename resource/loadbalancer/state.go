@@ -18,8 +18,8 @@ type Listener struct {
 	TargetPort int32
 }
 
-// Created reports whether a create is done: Incus has the load balancer and nothing is pending. A create that failed
-// before Incus had it is deleted on the spot.
+// Created reports whether a create is done: Incus has the load balancer and nothing is pending. A create Incus gave up
+// on keeps the load balancer with the reason set; it is Deleted only when someone deleted it before the create finished.
 func Created(lb api.LoadBalancerQueryResult) (bool, error) {
 	if lb.Transition != nil {
 		return false, nil
@@ -28,7 +28,7 @@ func Created(lb api.LoadBalancerQueryResult) (bool, error) {
 		return false, fmt.Errorf("the load balancer was not created: %s", *lb.RequestFailureReason)
 	}
 	if lb.CurrentExistence != nil && *lb.CurrentExistence == api.CurrentExistenceDeleted {
-		return false, errors.New("the load balancer was not created: OpenViCloud deleted it after the create failed")
+		return false, errors.New("the load balancer was not created: it was deleted before the create finished")
 	}
 	return lb.CurrentExistence != nil && *lb.CurrentExistence == api.CurrentExistenceExists, nil
 }

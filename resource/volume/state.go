@@ -20,8 +20,9 @@ func Find(list []api.VolumeQueryResult, id string) *api.VolumeQueryResult {
 	return nil
 }
 
-// Created reports whether a create is done: the volume exists on Incus and no request is pending. A create Incus
-// refused before the volume had an id is deleted on the spot, so a volume that left the list was not created.
+// Created reports whether a create is done: the volume exists on Incus and no request is pending. A create Incus gave
+// up on keeps the volume listed with the reason set; it leaves the list only when someone deleted it, so a volume that
+// left the list was not created.
 func Created(v *api.VolumeQueryResult) (bool, error) {
 	if v == nil {
 		return false, errors.New("the volume was not created: it is no longer listed")

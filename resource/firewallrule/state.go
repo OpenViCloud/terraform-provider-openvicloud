@@ -52,3 +52,9 @@ func SplitImportId(id string) (network string, rule string, ok bool) {
 	}
 	return parts[0], parts[1], true
 }
+
+// Deletable reports whether the API takes a delete now: it refuses one while the create is pending. A pending delete is
+// repeated; a rule no longer listed needs no wait.
+func Deletable(rule *api.FirewallRuleQueryResult) bool {
+	return rule == nil || rule.Transition == nil || *rule.Transition == api.FirewallRuleTransitionDeleting
+}

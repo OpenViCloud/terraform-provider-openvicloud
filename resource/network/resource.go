@@ -220,6 +220,19 @@ func (r *network) Delete(ctx context.Context, req resource.DeleteRequest, resp *
 		return
 	}
 	id := state.Id.ValueString()
+	// The API refuses a delete while another request on the network is pending (a create that timed out here, an apply
+	// interrupted): wait it out first, so destroy and replace work on a tainted network.
+	err := wait.Until(ctx, realClock, timeout, interval, func(ctx context.Context) (bool, error) {
+		response, err := r.client.TitanInfrastructureEndpointsNetworkGetNetworkEndpointWithResponse(ctx, id)
+		if err != nil {
+			return false, nil
+		}
+		return Deletable(response.JSON200), nil
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Waiting for the network's pending request failed", err.Error())
+		return
+	}
 	response, err := r.client.TitanInfrastructureEndpointsNetworkDeleteNetworkEndpointWithResponse(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError("Deleting the network failed", err.Error())

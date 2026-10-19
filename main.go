@@ -11,6 +11,10 @@ import (
 	"github.com/OpenViCloud/terraform-provider-openvicloud/provider"
 	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/firewallrule"
 	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/network"
+	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/sshkey"
+	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/vm"
+	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/volume"
+	"github.com/OpenViCloud/terraform-provider-openvicloud/resource/volumeattachment"
 	tfdatasource "github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,7 +30,9 @@ func DataSources() []func() tfdatasource.DataSource {
 }
 
 func Resources() []func() resource.Resource {
-	return []func() resource.Resource{network.New, firewallrule.New}
+	return []func() resource.Resource{
+		network.New, firewallrule.New, sshkey.New, vm.New, volume.New, volumeattachment.New,
+	}
 }
 
 func main() {

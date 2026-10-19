@@ -1,0 +1,6 @@
+# Local provider builds and Terraform working files of manual tries.
+/terraform-provider-openvicloud
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl

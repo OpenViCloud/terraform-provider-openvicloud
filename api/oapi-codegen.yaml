@@ -1,0 +1,12 @@
+package: api
+output: client.gen.go
+generate:
+  models: true
+  client: true
+compatibility:
+  # Every enum constant carries its type name (VmStateRunning, InvoiceDisplayStatusNew): bare values
+  # collide across enums and with this package's own names.
+  always-prefix-enum-values: true
+output-options:
+  overlay:
+    path: decimal-overlay.yaml

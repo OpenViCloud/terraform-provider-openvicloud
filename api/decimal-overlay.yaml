@@ -1,0 +1,13 @@
+# The control plane publishes money and prices as `type: number, format: decimal`. oapi-codegen has no
+# Go type for that format, and float32/float64 would round VND amounts and per-hour prices, so every
+# decimal is decoded as json.Number: the exact digits the server sent.
+overlay: 1.0.0
+info:
+  title: Decimal numbers stay exact
+  version: 1.0.0
+actions:
+  - target: "$..[?(@.format == 'decimal')]"
+    update:
+      # No x-go-type-import: the generated client already imports encoding/json, and naming it again
+      # declares the import twice.
+      x-go-type: json.Number

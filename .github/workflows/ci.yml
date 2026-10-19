@@ -1,0 +1,41 @@
+name: CI
+
+# Build, vet, unit tests, and the generated client matching the committed copy of the API contract
+# (api/openapi-v1.json, synced from OpenViCloud/titan by scripts/sync-spec.sh). Acceptance tests (TF_ACC) need a
+# live OpenViCloud API and a token: they run on a machine with the dev cluster, never here.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Generated client matches the spec
+        run: |
+          go generate ./api/
+          git diff --exit-code -- api/
+
+      - name: Format
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Build
+        run: go build -trimpath -o /dev/null .

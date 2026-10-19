@@ -210,9 +210,9 @@ type CreateFirewallRuleCommandResult struct {
 type CreateFirewallRuleRequest struct {
 	Cidr      string `json:"cidr"`
 	Direction string `json:"direction"`
-	EndPort   int32  `json:"endPort"`
+	EndPort   *int32 `json:"endPort"`
 	Protocol  string `json:"protocol"`
-	StartPort int32  `json:"startPort"`
+	StartPort *int32 `json:"startPort"`
 }
 
 // CreateLoadBalancerCommand defines model for CreateLoadBalancerCommand.
@@ -456,6 +456,11 @@ type OsImageInfo struct {
 	Id     *string `json:"id,omitempty"`
 	Name   *string `json:"name,omitempty"`
 	SizeGb *int32  `json:"sizeGb,omitempty"`
+}
+
+// RenameLoadBalancerBody defines model for RenameLoadBalancerBody.
+type RenameLoadBalancerBody struct {
+	Name string `json:"name"`
 }
 
 // RenameNetworkRequest defines model for RenameNetworkRequest.
@@ -794,6 +799,9 @@ type TitanInfrastructureEndpointsApiTokenCreateApiTokenEndpointJSONRequestBody =
 // TitanInfrastructureEndpointsLoadBalancerCreateLoadBalancerEndpointJSONRequestBody defines body for TitanInfrastructureEndpointsLoadBalancerCreateLoadBalancerEndpoint for application/json ContentType.
 type TitanInfrastructureEndpointsLoadBalancerCreateLoadBalancerEndpointJSONRequestBody = CreateLoadBalancerCommand
 
+// TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody defines body for TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint for application/json ContentType.
+type TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody = RenameLoadBalancerBody
+
 // TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointJSONRequestBody defines body for TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpoint for application/json ContentType.
 type TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointJSONRequestBody = UpdateLoadBalancerBody
 
@@ -963,6 +971,11 @@ type ClientInterface interface {
 
 	// TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpoint request
 	TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpoint(ctx context.Context, loadBalancerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBody request with any body
+	TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBody(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint(ctx context.Context, loadBalancerId string, body TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBody request with any body
 	TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBody(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1347,6 +1360,30 @@ func (c *Client) TitanInfrastructureEndpointsLoadBalancerDeleteLoadBalancerEndpo
 
 func (c *Client) TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpoint(ctx context.Context, loadBalancerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointRequest(c.Server, loadBalancerId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBody(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequestWithBody(c.Server, loadBalancerId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint(ctx context.Context, loadBalancerId string, body TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequest(c.Server, loadBalancerId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2608,6 +2645,53 @@ func NewTitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointRequest(s
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequest calls the generic TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint builder with application/json body
+func NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequest(server string, loadBalancerId string, body TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequestWithBody(server, loadBalancerId, "application/json", bodyReader)
+}
+
+// NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequestWithBody generates requests for TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint with any type of body
+func NewTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointRequestWithBody(server string, loadBalancerId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "loadBalancerId", runtime.ParamLocationPath, loadBalancerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/tenant/load-balancers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -4350,6 +4434,11 @@ type ClientWithResponsesInterface interface {
 	// TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointWithResponse request
 	TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointWithResponse(ctx context.Context, loadBalancerId string, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointResponse, error)
 
+	// TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBodyWithResponse request with any body
+	TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBodyWithResponse(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse, error)
+
+	TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithResponse(ctx context.Context, loadBalancerId string, body TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse, error)
+
 	// TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBodyWithResponse request with any body
 	TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBodyWithResponse(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointResponse, error)
 
@@ -4889,6 +4978,27 @@ func (r TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointResponse)
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r TitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5982,6 +6092,23 @@ func (c *ClientWithResponses) TitanInfrastructureEndpointsLoadBalancerGetLoadBal
 	return ParseTitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointResponse(rsp)
 }
 
+// TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBodyWithResponse request with arbitrary body returning *TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse
+func (c *ClientWithResponses) TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBodyWithResponse(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse, error) {
+	rsp, err := c.TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithBody(ctx, loadBalancerId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse(rsp)
+}
+
+func (c *ClientWithResponses) TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithResponse(ctx context.Context, loadBalancerId string, body TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse, error) {
+	rsp, err := c.TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint(ctx, loadBalancerId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse(rsp)
+}
+
 // TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBodyWithResponse request with arbitrary body returning *TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointResponse
 func (c *ClientWithResponses) TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBodyWithResponse(ctx context.Context, loadBalancerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointResponse, error) {
 	rsp, err := c.TitanInfrastructureEndpointsLoadBalancerUpdateLoadBalancerEndpointWithBody(ctx, loadBalancerId, contentType, body, reqEditors...)
@@ -6887,6 +7014,22 @@ func ParseTitanInfrastructureEndpointsLoadBalancerGetLoadBalancerEndpointRespons
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse parses an HTTP response from a TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointWithResponse call
+func ParseTitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse(rsp *http.Response) (*TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

@@ -10,7 +10,7 @@ OpenViCloud portal (API tokens page).
 | Kind | Name |
 |---|---|
 | Data source | `openvicloud_zones`, `openvicloud_templates`, `openvicloud_vm_offerings`, `openvicloud_volume_offerings` |
-| Resource | `openvicloud_network`, `openvicloud_firewall_rule`, `openvicloud_ssh_key`, `openvicloud_vm`, `openvicloud_volume`, `openvicloud_volume_attachment` |
+| Resource | `openvicloud_network`, `openvicloud_firewall_rule`, `openvicloud_ssh_key`, `openvicloud_vm`, `openvicloud_volume`, `openvicloud_volume_attachment`, `openvicloud_load_balancer` |
 
 ```hcl
 terraform {
@@ -69,6 +69,19 @@ is created when it is Running or Ready.
 
 Terraform declares what exists, not whether a VM is on: stop and start a VM with the `openvicloud` CLI or the
 portal, and Terraform leaves it as it is. Only a VM's name changes in place; any other change replaces the VM.
+
+A load balancer (on a network with `enable_public_ipv6 = true`) changes its name, listeners and backend VMs in place
+and keeps its VIP. OpenViCloud refuses to delete a VM a load balancer still sends to, so to replace such a VM, first
+remove it from `backend_vm_ids` and apply, then make the change that replaces it.
+
+```hcl
+resource "openvicloud_load_balancer" "web" {
+  name           = "web"
+  network_id     = openvicloud_network.web.id
+  listener       = [{ protocol = "TCP", port = 80, target_port = 8080 }]
+  backend_vm_ids = [openvicloud_vm.web.id]
+}
+```
 
 ## Develop
 

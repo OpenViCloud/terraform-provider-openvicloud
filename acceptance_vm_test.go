@@ -98,6 +98,13 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 	for _, k := range *keys.JSON200 {
 		alive("SSH key", k.Name, nil)
 	}
+	balancers, err := client.TitanInfrastructureEndpointsLoadBalancerListLoadBalancersEndpointWithResponse(ctx)
+	if err != nil {
+		return err
+	}
+	for _, lb := range *balancers.JSON200 {
+		alive("load balancer", lb.Name, lb.CurrentExistence)
+	}
 	networks, err := client.TitanInfrastructureEndpointsNetworkListNetworksEndpointWithResponse(ctx)
 	if err != nil {
 		return err

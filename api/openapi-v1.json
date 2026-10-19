@@ -1641,6 +1641,49 @@
           }
         ]
       },
+      "patch": {
+        "tags": [
+          "V1"
+        ],
+        "operationId": "TitanInfrastructureEndpointsLoadBalancerRenameLoadBalancerEndpoint",
+        "parameters": [
+          {
+            "name": "loadBalancerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "RenameLoadBalancerBody",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameLoadBalancerBody"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
+      },
       "put": {
         "tags": [
           "V1"
@@ -3075,8 +3118,6 @@
         "required": [
           "direction",
           "protocol",
-          "startPort",
-          "endPort",
           "cidr"
         ],
         "properties": {
@@ -3095,14 +3136,14 @@
             "format": "int32",
             "maximum": 65535.0,
             "minimum": 1.0,
-            "nullable": false
+            "nullable": true
           },
           "endPort": {
             "type": "integer",
             "format": "int32",
             "maximum": 65535.0,
             "minimum": 1.0,
-            "nullable": false
+            "nullable": true
           },
           "cidr": {
             "type": "string",
@@ -3556,6 +3597,22 @@
           "Updating",
           "Deleting"
         ]
+      },
+      "RenameLoadBalancerBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+            "nullable": false
+          }
+        }
       },
       "UpdateLoadBalancerBody": {
         "type": "object",

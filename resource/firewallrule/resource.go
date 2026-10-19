@@ -136,7 +136,7 @@ func (r *firewallRule) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	body := ruleBody{Direction: plan.Direction.ValueString(), Protocol: plan.Protocol.ValueString(), Cidr: plan.Cidr.ValueString()}
+	body := api.CreateFirewallRuleRequest{Direction: plan.Direction.ValueString(), Protocol: plan.Protocol.ValueString(), Cidr: plan.Cidr.ValueString()}
 	if !plan.StartPort.IsNull() && !plan.StartPort.IsUnknown() {
 		start := int32(plan.StartPort.ValueInt64())
 		body.StartPort = &start

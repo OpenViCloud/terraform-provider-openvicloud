@@ -89,7 +89,7 @@ resource "openvicloud_load_balancer" "web" {
 - `TF_ACC=1 go test -run TestAcc -timeout 30m .`: acceptance tests against a real OpenViCloud API; set
   `OPENVICLOUD_API_URL` and `OPENVICLOUD_TOKEN` (and `OPENVICLOUD_TEST_ZONE`, default `local-mac`). They create and
   destroy resources named `tfacc-<random>`.
-- `scripts/sync-spec.sh <commit>`: copy the API contract from a commit of OpenViCloud/control-plane and regenerate the client;
+- `scripts/sync-spec.sh <commit>`: copy the API contract from a commit of OpenViCloud/titan-control-plane and regenerate the client;
   `api/SOURCE` records the commit.
 - `go tool tfplugindocs generate --provider-name openvicloud`: regenerate the registry pages in `docs/` from the
   schema descriptions and `examples/`; CI fails when they are out of date.

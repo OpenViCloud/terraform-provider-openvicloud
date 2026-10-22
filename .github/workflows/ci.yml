@@ -1,7 +1,7 @@
 name: CI
 
 # Build, vet, unit tests, and the generated client matching the committed copy of the API contract
-# (api/openapi-v1.json, synced from OpenViCloud/control-plane by scripts/sync-spec.sh). Acceptance tests (TF_ACC) need a
+# (api/openapi-v1.json, synced from OpenViCloud/titan-control-plane by scripts/sync-spec.sh). Acceptance tests (TF_ACC) need a
 # live OpenViCloud API and a token: they run on a machine with the dev cluster, never here.
 on:
   push:

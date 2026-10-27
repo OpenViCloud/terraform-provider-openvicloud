@@ -1,4 +1,4 @@
-// Package datasource holds the read-only catalog data sources: zones, templates and the two offering lists.
+// Package datasource holds the read-only catalog data sources: clusters, templates and the two offering lists.
 package datasource
 
 import (

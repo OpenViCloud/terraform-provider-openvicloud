@@ -15,7 +15,7 @@ A private network of the tenant. Only name changes in place; any other change re
 ```terraform
 resource "openvicloud_network" "web" {
   name               = "web"
-  zone_id            = "singapore01"
+  cluster_id         = "singapore01"
   enable_public_ipv6 = true
 }
 ```
@@ -25,15 +25,15 @@ resource "openvicloud_network" "web" {
 
 ### Required
 
+- `cluster_id` (String) Cluster of the network (data source openvicloud_clusters).
 - `name` (String) Up to 100 letters, digits, hyphens and underscores, starting with a letter or digit; unique in the tenant.
-- `zone_id` (String) Zone of the network (data source openvicloud_zones).
 
 ### Optional
 
 - `cidr` (String) IPv4 range of the network; chosen by OpenViCloud when not set.
 - `default_egress_policy` (String) Allow or Deny: what happens to outbound traffic no firewall rule matches.
 - `default_ingress_policy` (String) Allow or Deny: what happens to inbound traffic no firewall rule matches.
-- `enable_public_ipv6` (Boolean) Give the network a public IPv6 /64 of its zone.
+- `enable_public_ipv6` (Boolean) Give the network a public IPv6 /64 of its cluster.
 
 ### Read-Only
 

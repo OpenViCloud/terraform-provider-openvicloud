@@ -40,7 +40,7 @@ type vm struct{ client *api.ClientWithResponses }
 type model struct {
 	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
-	ZoneId            types.String `tfsdk:"zone_id"`
+	ClusterId         types.String `tfsdk:"cluster_id"`
 	NetworkId         types.String `tfsdk:"network_id"`
 	TemplateId        types.String `tfsdk:"template_id"`
 	VmOfferingId      types.String `tfsdk:"vm_offering_id"`
@@ -84,7 +84,7 @@ func (r *vm) Schema(ctx context.Context, req resource.SchemaRequest, resp *resou
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9-]*$`), "letters, digits and hyphens, starting with a letter or digit"),
 				},
 			},
-			"zone_id":        schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Zone of the VM; the same as its network's."},
+			"cluster_id":     schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Cluster of the VM; the same as its network's."},
 			"network_id":     schema.StringAttribute{Required: true, PlanModifiers: replace},
 			"template_id":    schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Operating system (data source openvicloud_templates)."},
 			"vm_offering_id": schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Size of the VM (data source openvicloud_vm_offerings)."},
@@ -130,7 +130,7 @@ func (r *vm) Create(ctx context.Context, req resource.CreateRequest, resp *resou
 		return
 	}
 	body := api.CreateVmCommand{
-		Name: plan.Name.ValueString(), ZoneId: plan.ZoneId.ValueString(), NetworkId: plan.NetworkId.ValueString(),
+		Name: plan.Name.ValueString(), ClusterId: plan.ClusterId.ValueString(), NetworkId: plan.NetworkId.ValueString(),
 		TemplateId: plan.TemplateId.ValueString(), VmOfferingId: plan.VmOfferingId.ValueString(),
 	}
 	if !plan.DiskSizeGb.IsNull() && !plan.DiskSizeGb.IsUnknown() {
@@ -284,7 +284,7 @@ func (r *vm) ImportState(ctx context.Context, req resource.ImportStateRequest, r
 func fill(m *model, v api.VmQueryResult) {
 	m.Id = text(v.Id)
 	m.Name = text(v.Name)
-	m.ZoneId = text(v.ZoneId)
+	m.ClusterId = text(v.ClusterId)
 	m.NetworkId = text(v.NetworkId)
 	m.TemplateId = text(v.TemplateId)
 	m.VmOfferingId = text(v.VmOfferingId)

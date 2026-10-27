@@ -3,12 +3,12 @@
 page_title: "openvicloud_templates Data Source - openvicloud"
 subcategory: ""
 description: |-
-  The operating systems a VM can start from. With zone_id: only those ready in that zone; without: those ready in at least one zone.
+  The operating systems a VM can start from. With cluster_id: only those ready in that cluster; without: those ready in at least one cluster.
 ---
 
 # openvicloud_templates (Data Source)
 
-The operating systems a VM can start from. With zone_id: only those ready in that zone; without: those ready in at least one zone.
+The operating systems a VM can start from. With cluster_id: only those ready in that cluster; without: those ready in at least one cluster.
 
 
 
@@ -17,7 +17,7 @@ The operating systems a VM can start from. With zone_id: only those ready in tha
 
 ### Optional
 
-- `zone_id` (String) Only the templates ready in this zone.
+- `cluster_id` (String) Only the templates ready in this cluster.
 
 ### Read-Only
 

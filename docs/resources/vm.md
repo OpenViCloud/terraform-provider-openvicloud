@@ -14,7 +14,7 @@ A virtual machine of the tenant. Only name changes in place; any other change re
 
 ```terraform
 data "openvicloud_templates" "here" {
-  zone_id = "singapore01"
+  cluster_id = "singapore01"
 }
 
 resource "openvicloud_ssh_key" "me" {
@@ -24,7 +24,7 @@ resource "openvicloud_ssh_key" "me" {
 
 resource "openvicloud_vm" "web" {
   name           = "web-1"
-  zone_id        = "singapore01"
+  cluster_id     = "singapore01"
   network_id     = openvicloud_network.web.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
@@ -37,11 +37,11 @@ resource "openvicloud_vm" "web" {
 
 ### Required
 
+- `cluster_id` (String) Cluster of the VM; the same as its network's.
 - `name` (String) Up to 64 letters, digits and hyphens, starting with a letter or digit; unique in the tenant.
 - `network_id` (String)
 - `template_id` (String) Operating system (data source openvicloud_templates).
 - `vm_offering_id` (String) Size of the VM (data source openvicloud_vm_offerings).
-- `zone_id` (String) Zone of the VM; the same as its network's.
 
 ### Optional
 

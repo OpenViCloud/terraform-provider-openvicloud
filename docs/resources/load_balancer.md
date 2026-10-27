@@ -33,9 +33,9 @@ resource "openvicloud_load_balancer" "web" {
 
 ### Read-Only
 
+- `cluster_id` (String)
 - `id` (String) The ID of this resource.
 - `vip` (String) IPv6 address the load balancer listens on.
-- `zone_id` (String)
 
 <a id="nestedatt--listener"></a>
 ### Nested Schema for `listener`

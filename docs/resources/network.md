@@ -15,7 +15,7 @@ A private network of the tenant. Only name changes in place; any other change re
 ```terraform
 resource "openvicloud_network" "web" {
   name               = "web"
-  cluster_id            = "singapore01"
+  cluster_id         = "singapore01"
   enable_public_ipv6 = true
 }
 ```
@@ -25,8 +25,8 @@ resource "openvicloud_network" "web" {
 
 ### Required
 
-- `name` (String) Up to 100 letters, digits, hyphens and underscores, starting with a letter or digit; unique in the tenant.
 - `cluster_id` (String) Cluster of the network (data source openvicloud_clusters).
+- `name` (String) Up to 100 letters, digits, hyphens and underscores, starting with a letter or digit; unique in the tenant.
 
 ### Optional
 

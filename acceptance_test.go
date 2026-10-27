@@ -1,7 +1,7 @@
 package main
 
 // Acceptance tests run against a real OpenViCloud API (no fake): TF_ACC=1 with OPENVICLOUD_API_URL and
-// OPENVICLOUD_TOKEN set, e.g. the dev cluster with the token of local-cluster/mac/scripts/tf-acc-token.sh in titan.
+// OPENVICLOUD_TOKEN set, e.g. the dev cluster with the token of lima/scripts/tf-acc-token.sh of OpenViCloud/titan-local-cluster.
 // Every resource they create is named tfacc-<random> and checked gone at the end.
 
 import (
@@ -30,7 +30,7 @@ func cluster() string {
 	if value := os.Getenv("OPENVICLOUD_TEST_CLUSTER"); value != "" {
 		return value
 	}
-	return "local-mac"
+	return "local"
 }
 
 func preCheck(t *testing.T) {

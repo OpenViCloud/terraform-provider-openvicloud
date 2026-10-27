@@ -3,7 +3,8 @@
 Manage the resources of your OpenViCloud tenant from Terraform or OpenTofu, with an API token you create on the
 OpenViCloud portal (API tokens page).
 
-> Not published to the Terraform or OpenTofu registry yet. Until the first release, build it locally (below).
+> Published to the [Terraform Registry](https://registry.terraform.io/providers/openvicloud/openvicloud/latest). The OpenTofu
+> registry has not accepted it yet; until it does, OpenTofu users can build it locally (below).
 
 ## What it manages today
 

@@ -26,7 +26,7 @@ var version = "dev"
 
 func DataSources() []func() tfdatasource.DataSource {
 	return []func() tfdatasource.DataSource{
-		datasource.NewZones, datasource.NewTemplates, datasource.NewVmOfferings, datasource.NewVolumeOfferings,
+		datasource.NewClusters, datasource.NewTemplates, datasource.NewVmOfferings, datasource.NewVolumeOfferings,
 	}
 }
 

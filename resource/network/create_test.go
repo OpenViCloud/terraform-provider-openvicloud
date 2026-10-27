@@ -25,7 +25,7 @@ func TestSendCreate_AnswerLost_SendsAgainWithTheSameKey(t *testing.T) {
 	defer server.Close()
 	client, _ := api.New(server.URL, "ovc_x", "test", server.Client())
 
-	id, err := sendCreate(context.Background(), client, api.CreateNetworkCommand{Name: "web", ZoneId: "local-mac"}, func(time.Duration) {})
+	id, err := sendCreate(context.Background(), client, api.CreateNetworkCommand{Name: "web", ClusterId: "local-mac"}, func(time.Duration) {})
 
 	if err != nil || id != "9a1d0000-0000-4000-8000-000000000001" {
 		t.Fatalf("id = %q, err = %v", id, err)
@@ -46,7 +46,7 @@ func TestSendCreate_Refused_DoesNotSendAgain(t *testing.T) {
 	defer server.Close()
 	client, _ := api.New(server.URL, "ovc_x", "test", server.Client())
 
-	_, err := sendCreate(context.Background(), client, api.CreateNetworkCommand{Name: "web", ZoneId: "local-mac"}, func(time.Duration) {})
+	_, err := sendCreate(context.Background(), client, api.CreateNetworkCommand{Name: "web", ClusterId: "local-mac"}, func(time.Duration) {})
 
 	if err == nil || sends != 1 || err.Error() != "HTTP 409 NETWORK_NAME_TAKEN: Network name taken" {
 		t.Fatalf("sends = %d, err = %v", sends, err)

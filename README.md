@@ -10,7 +10,7 @@ OpenViCloud portal (API tokens page).
 
 | Kind | Name |
 |---|---|
-| Data source | `openvicloud_zones`, `openvicloud_templates`, `openvicloud_vm_offerings`, `openvicloud_volume_offerings` |
+| Data source | `openvicloud_clusters`, `openvicloud_templates`, `openvicloud_vm_offerings`, `openvicloud_volume_offerings` |
 | Resource | `openvicloud_network`, `openvicloud_firewall_rule`, `openvicloud_ssh_key`, `openvicloud_vm`, `openvicloud_volume`, `openvicloud_volume_attachment`, `openvicloud_load_balancer` |
 
 ```hcl
@@ -24,7 +24,7 @@ provider "openvicloud" {} # reads OPENVICLOUD_TOKEN, and OPENVICLOUD_API_URL whe
 
 resource "openvicloud_network" "web" {
   name    = "web"
-  zone_id = "singapore01"
+  cluster_id = "singapore01"
 }
 
 resource "openvicloud_firewall_rule" "ssh" {
@@ -36,7 +36,7 @@ resource "openvicloud_firewall_rule" "ssh" {
   cidr       = "0.0.0.0/0"
 }
 
-data "openvicloud_templates" "here" { zone_id = "singapore01" }
+data "openvicloud_templates" "here" { cluster_id = "singapore01" }
 
 resource "openvicloud_ssh_key" "me" {
   name       = "me"
@@ -45,7 +45,7 @@ resource "openvicloud_ssh_key" "me" {
 
 resource "openvicloud_vm" "web" {
   name           = "web-1"
-  zone_id        = "singapore01"
+  cluster_id        = "singapore01"
   network_id     = openvicloud_network.web.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
@@ -54,7 +54,7 @@ resource "openvicloud_vm" "web" {
 
 resource "openvicloud_volume" "data" {
   name               = "data"
-  zone_id            = "singapore01"
+  cluster_id            = "singapore01"
   volume_offering_id = "standard"
   size_gb            = 20
 }
@@ -88,7 +88,7 @@ resource "openvicloud_load_balancer" "web" {
 
 - `go test ./...`: unit tests.
 - `TF_ACC=1 go test -run TestAcc -timeout 30m .`: acceptance tests against a real OpenViCloud API; set
-  `OPENVICLOUD_API_URL` and `OPENVICLOUD_TOKEN` (and `OPENVICLOUD_TEST_ZONE`, default `local-mac`). They create and
+  `OPENVICLOUD_API_URL` and `OPENVICLOUD_TOKEN` (and `OPENVICLOUD_TEST_CLUSTER`, default `local-mac`). They create and
   destroy resources named `tfacc-<random>`.
 - `scripts/sync-spec.sh <commit>`: copy the API contract from a commit of OpenViCloud/titan-control-plane and regenerate the client;
   `api/SOURCE` records the commit.

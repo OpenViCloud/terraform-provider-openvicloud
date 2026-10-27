@@ -16,17 +16,17 @@ import (
 // lbConfig is a network with public IPv6, two VMs and a load balancer sending to the VMs listed in backends.
 func lbConfig(name, lbName, listeners, backends string) string {
 	return fmt.Sprintf(`
-data "openvicloud_templates" "here" { zone_id = %[3]q }
+data "openvicloud_templates" "here" { cluster_id = %[3]q }
 
 resource "openvicloud_network" "n" {
   name               = %[1]q
-  zone_id            = %[3]q
+  cluster_id            = %[3]q
   enable_public_ipv6 = true
 }
 
 resource "openvicloud_vm" "a" {
   name           = "%[1]s-a"
-  zone_id        = %[3]q
+  cluster_id        = %[3]q
   network_id     = openvicloud_network.n.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
@@ -34,7 +34,7 @@ resource "openvicloud_vm" "a" {
 
 resource "openvicloud_vm" "b" {
   name           = "%[1]s-b"
-  zone_id        = %[3]q
+  cluster_id        = %[3]q
   network_id     = openvicloud_network.n.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
@@ -46,7 +46,7 @@ resource "openvicloud_load_balancer" "lb" {
   listener       = [%[4]s]
   backend_vm_ids = [%[5]s]
 }
-`, name, lbName, zone(), listeners, backends)
+`, name, lbName, cluster(), listeners, backends)
 }
 
 func TestAccLoadBalancer_CreateImportUpdateInPlaceDestroy(t *testing.T) {

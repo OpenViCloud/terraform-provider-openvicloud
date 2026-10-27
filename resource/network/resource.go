@@ -37,7 +37,7 @@ type network struct{ client *api.ClientWithResponses }
 type model struct {
 	Id                   types.String `tfsdk:"id"`
 	Name                 types.String `tfsdk:"name"`
-	ZoneId               types.String `tfsdk:"zone_id"`
+	ClusterId            types.String `tfsdk:"cluster_id"`
 	Cidr                 types.String `tfsdk:"cidr"`
 	Gateway              types.String `tfsdk:"gateway"`
 	DefaultIngressPolicy types.String `tfsdk:"default_ingress_policy"`
@@ -73,9 +73,9 @@ func (r *network) Schema(ctx context.Context, req resource.SchemaRequest, resp *
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]*$`), "letters, digits, hyphens and underscores, starting with a letter or digit"),
 				},
 			},
-			"zone_id": schema.StringAttribute{
+			"cluster_id": schema.StringAttribute{
 				Required: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-				Description: "Zone of the network (data source openvicloud_zones).",
+				Description: "Cluster of the network (data source openvicloud_clusters).",
 			},
 			"cidr": schema.StringAttribute{
 				Optional: true, Computed: true, PlanModifiers: replaceOrKeep,
@@ -93,7 +93,7 @@ func (r *network) Schema(ctx context.Context, req resource.SchemaRequest, resp *
 			"enable_public_ipv6": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-				Description:   "Give the network a public IPv6 /64 of its zone.",
+				Description:   "Give the network a public IPv6 /64 of its cluster.",
 			},
 			"public_ipv6_subnet": schema.StringAttribute{Computed: true, PlanModifiers: keep},
 		},
@@ -118,7 +118,7 @@ func (r *network) Create(ctx context.Context, req resource.CreateRequest, resp *
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	body := api.CreateNetworkCommand{Name: plan.Name.ValueString(), ZoneId: plan.ZoneId.ValueString()}
+	body := api.CreateNetworkCommand{Name: plan.Name.ValueString(), ClusterId: plan.ClusterId.ValueString()}
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
 		cidr := plan.Cidr.ValueString()
 		body.Cidr = &cidr
@@ -264,7 +264,7 @@ func (r *network) ImportState(ctx context.Context, req resource.ImportStateReque
 func fill(m *model, n api.NetworkQueryResult) {
 	m.Id = text(n.Id)
 	m.Name = text(n.Name)
-	m.ZoneId = text(n.ZoneId)
+	m.ClusterId = text(n.ClusterId)
 	m.Cidr = text(n.Cidr)
 	m.Gateway = text(n.Gateway)
 	m.DefaultIngressPolicy = text(n.DefaultIngressPolicy)

@@ -26,8 +26,8 @@ var factories = map[string]func() (tfprotov6.ProviderServer, error){
 	"openvicloud": providerserver.NewProtocol6WithError(provider.New("test", DataSources(), Resources())()),
 }
 
-func zone() string {
-	if value := os.Getenv("OPENVICLOUD_TEST_ZONE"); value != "" {
+func cluster() string {
+	if value := os.Getenv("OPENVICLOUD_TEST_CLUSTER"); value != "" {
 		return value
 	}
 	return "local-mac"
@@ -56,21 +56,21 @@ func TestAccCatalog_ListsWhatTheApiLists(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-data "openvicloud_zones" "all" {}
-data "openvicloud_templates" "here" { zone_id = %q }
+data "openvicloud_clusters" "all" {}
+data "openvicloud_templates" "here" { cluster_id = %q }
 data "openvicloud_vm_offerings" "all" {}
 data "openvicloud_volume_offerings" "all" {}
-`, zone()),
+`, cluster()),
 				Check: resource.ComposeTestCheckFunc(
 					func(s *terraform.State) error {
-						zones, _ := client.TitanInfrastructureEndpointsCatalogListZonesEndpointWithResponse(context.Background())
-						z := zone()
+						clusters, _ := client.TitanInfrastructureEndpointsCatalogListClustersEndpointWithResponse(context.Background())
+						z := cluster()
 						templates, _ := client.TitanInfrastructureEndpointsCatalogListTemplatesEndpointWithResponse(context.Background(),
-							&api.TitanInfrastructureEndpointsCatalogListTemplatesEndpointParams{ZoneId: &z})
+							&api.TitanInfrastructureEndpointsCatalogListTemplatesEndpointParams{ClusterId: &z})
 						vms, _ := client.TitanInfrastructureEndpointsCatalogListVmOfferingsEndpointWithResponse(context.Background())
 						volumes, _ := client.TitanInfrastructureEndpointsCatalogListVolumeOfferingsEndpointWithResponse(context.Background())
 						want := map[string]int{
-							"data.openvicloud_zones.all.zones.#":                       len(*zones.JSON200),
+							"data.openvicloud_clusters.all.clusters.#":                 len(*clusters.JSON200),
 							"data.openvicloud_templates.here.templates.#":              len(*templates.JSON200),
 							"data.openvicloud_vm_offerings.all.vm_offerings.#":         len(*vms.JSON200),
 							"data.openvicloud_volume_offerings.all.volume_offerings.#": len(*volumes.JSON200),
@@ -90,8 +90,8 @@ data "openvicloud_volume_offerings" "all" {}
 				),
 			},
 			{
-				Config:      `data "openvicloud_templates" "nowhere" { zone_id = "no-such-zone" }`,
-				ExpectError: regexp.MustCompile(`ZONE_NOT_FOUND`),
+				Config:      `data "openvicloud_templates" "nowhere" { cluster_id = "no-such-cluster" }`,
+				ExpectError: regexp.MustCompile(`CLUSTER_NOT_FOUND`),
 			},
 		},
 	})
@@ -101,7 +101,7 @@ func networkConfig(name string) string {
 	return fmt.Sprintf(`
 resource "openvicloud_network" "n" {
   name    = %q
-  zone_id = %q
+  cluster_id = %q
 }
 resource "openvicloud_firewall_rule" "ssh" {
   network_id = openvicloud_network.n.id
@@ -117,7 +117,7 @@ resource "openvicloud_firewall_rule" "ping" {
   protocol   = "ICMP"
   cidr       = "0.0.0.0/0"
 }
-`, name, zone())
+`, name, cluster())
 }
 
 func TestAccNetworkAndRules_CreateImportRenameDestroy(t *testing.T) {

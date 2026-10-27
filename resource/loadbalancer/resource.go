@@ -46,7 +46,7 @@ type model struct {
 	Listeners    types.Set    `tfsdk:"listener"`
 	BackendVmIds types.Set    `tfsdk:"backend_vm_ids"`
 	Vip          types.String `tfsdk:"vip"`
-	ZoneId       types.String `tfsdk:"zone_id"`
+	ClusterId    types.String `tfsdk:"cluster_id"`
 }
 
 type listenerModel struct {
@@ -101,8 +101,8 @@ func (r *loadBalancer) Schema(ctx context.Context, req resource.SchemaRequest, r
 				ElementType: types.StringType, Required: true, Description: "1 to 20 VMs of the same network.",
 				Validators: []validator.Set{setvalidator.SizeBetween(1, maxBackends)},
 			},
-			"vip":     schema.StringAttribute{Computed: true, PlanModifiers: keep, Description: "IPv6 address the load balancer listens on."},
-			"zone_id": schema.StringAttribute{Computed: true, PlanModifiers: keep},
+			"vip":        schema.StringAttribute{Computed: true, PlanModifiers: keep, Description: "IPv6 address the load balancer listens on."},
+			"cluster_id": schema.StringAttribute{Computed: true, PlanModifiers: keep},
 		},
 	}
 }
@@ -370,7 +370,7 @@ func fill(ctx context.Context, m *model, lb api.LoadBalancerQueryResult) diag.Di
 	m.Name = text(lb.Name)
 	m.NetworkId = text(lb.NetworkId)
 	m.Vip = text(lb.Vip)
-	m.ZoneId = text(lb.ZoneId)
+	m.ClusterId = text(lb.ClusterId)
 
 	listeners := []attr.Value{}
 	if lb.Listeners != nil {

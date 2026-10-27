@@ -28,17 +28,17 @@ type madeOutsideTerraform struct{ networkId, keyId, vmId, templateId string }
 func makeOutsideTerraform(t *testing.T, client *api.ClientWithResponses, name, publicKey, userData string) madeOutsideTerraform {
 	ctx := context.Background()
 	var made madeOutsideTerraform
-	z := zone()
+	z := cluster()
 	templates, err := client.TitanInfrastructureEndpointsCatalogListTemplatesEndpointWithResponse(ctx,
-		&api.TitanInfrastructureEndpointsCatalogListTemplatesEndpointParams{ZoneId: &z})
+		&api.TitanInfrastructureEndpointsCatalogListTemplatesEndpointParams{ClusterId: &z})
 	if err != nil || templates.JSON200 == nil || len(*templates.JSON200) == 0 {
-		t.Fatalf("no template in zone %s: %v", z, err)
+		t.Fatalf("no template in cluster %s: %v", z, err)
 	}
 	made.templateId = *(*templates.JSON200)[0].Id
 
 	created, err := client.TitanInfrastructureEndpointsNetworkCreateNetworkEndpointWithResponse(ctx,
 		&api.TitanInfrastructureEndpointsNetworkCreateNetworkEndpointParams{IdempotencyKey: api.NewIdempotencyKey()},
-		api.CreateNetworkCommand{Name: name, ZoneId: z})
+		api.CreateNetworkCommand{Name: name, ClusterId: z})
 	if err != nil || created.JSON202 == nil {
 		t.Fatalf("creating the network: %v %s", err, created.Body)
 	}
@@ -65,7 +65,7 @@ func makeOutsideTerraform(t *testing.T, client *api.ClientWithResponses, name, p
 	keys := []string{made.keyId}
 	machine, err := client.TitanInfrastructureEndpointsVmCreateVmEndpointWithResponse(ctx,
 		&api.TitanInfrastructureEndpointsVmCreateVmEndpointParams{IdempotencyKey: api.NewIdempotencyKey()},
-		api.CreateVmCommand{Name: name, ZoneId: z, NetworkId: made.networkId, TemplateId: made.templateId,
+		api.CreateVmCommand{Name: name, ClusterId: z, NetworkId: made.networkId, TemplateId: made.templateId,
 			VmOfferingId: "s", SshKeyIds: &keys, UserData: &userData})
 	if err != nil || machine.JSON202 == nil {
 		t.Fatalf("creating the VM: %v %s", err, machine.Body)
@@ -164,7 +164,7 @@ import {
 
 resource "openvicloud_network" "n" {
   name    = %[5]q
-  zone_id = %[6]q
+  cluster_id = %[6]q
 }
 
 resource "openvicloud_ssh_key" "k" {
@@ -174,14 +174,14 @@ resource "openvicloud_ssh_key" "k" {
 
 resource "openvicloud_vm" "v" {
   name           = %[5]q
-  zone_id        = %[6]q
+  cluster_id        = %[6]q
   network_id     = openvicloud_network.n.id
   template_id    = %[4]q
   vm_offering_id = "s"
   ssh_key_ids    = [openvicloud_ssh_key.k.id]
   user_data      = %[8]q
 }
-`, made.networkId, made.keyId, made.vmId, made.templateId, name, zone(), publicKey, userData)
+`, made.networkId, made.keyId, made.vmId, made.templateId, name, cluster(), publicKey, userData)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: factories,

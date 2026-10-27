@@ -3,12 +3,12 @@
 page_title: "openvicloud_volume_attachment Resource - openvicloud"
 subcategory: ""
 description: |-
-  Attaches a volume to a VM of the same zone. Changing either side detaches and attaches again.
+  Attaches a volume to a VM of the same cluster. Changing either side detaches and attaches again.
 ---
 
 # openvicloud_volume_attachment (Resource)
 
-Attaches a volume to a VM of the same zone. Changing either side detaches and attaches again.
+Attaches a volume to a VM of the same cluster. Changing either side detaches and attaches again.
 
 
 

@@ -20,7 +20,7 @@ A block volume of the tenant; attach it to a VM with openvicloud_volume_attachme
 - `name` (String)
 - `size_gb` (Number)
 - `volume_offering_id` (String) Kind of volume (data source openvicloud_volume_offerings).
-- `zone_id` (String) Zone of the volume; the same as the VM it attaches to.
+- `cluster_id` (String) Cluster of the volume; the same as the VM it attaches to.
 
 ### Read-Only
 

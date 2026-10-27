@@ -31,11 +31,11 @@ func newPublicKey(t *testing.T) string {
 
 func vmConfig(name, vmName, publicKey string) string {
 	return fmt.Sprintf(`
-data "openvicloud_templates" "here" { zone_id = %[4]q }
+data "openvicloud_templates" "here" { cluster_id = %[4]q }
 
 resource "openvicloud_network" "n" {
   name    = %[1]q
-  zone_id = %[4]q
+  cluster_id = %[4]q
 }
 
 resource "openvicloud_ssh_key" "k" {
@@ -45,7 +45,7 @@ resource "openvicloud_ssh_key" "k" {
 
 resource "openvicloud_vm" "v" {
   name           = %[2]q
-  zone_id        = %[4]q
+  cluster_id        = %[4]q
   network_id     = openvicloud_network.n.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
@@ -55,7 +55,7 @@ resource "openvicloud_vm" "v" {
 
 resource "openvicloud_volume" "d" {
   name               = %[1]q
-  zone_id            = %[4]q
+  cluster_id            = %[4]q
   volume_offering_id = "standard"
   size_gb            = 1
 }
@@ -64,7 +64,7 @@ resource "openvicloud_volume_attachment" "a" {
   volume_id = openvicloud_volume.d.id
   vm_id     = openvicloud_vm.v.id
 }
-`, name, vmName, publicKey, zone())
+`, name, vmName, publicKey, cluster())
 }
 
 // leftovers finds what a test named name left on the API: anything not Deleted whose name starts with it. It goes by
@@ -222,11 +222,11 @@ resource "openvicloud_ssh_key" "k" {
 				Config: fmt.Sprintf(`
 resource "openvicloud_vm" "v" {
   name           = "-starts-with-hyphen"
-  zone_id        = %q
+  cluster_id        = %q
   network_id     = "00000000-0000-4000-8000-000000000000"
   template_id    = "00000000-0000-4000-8000-000000000000"
   vm_offering_id = "s"
-}`, zone()),
+}`, cluster()),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`starting with a letter or digit`),
 			},

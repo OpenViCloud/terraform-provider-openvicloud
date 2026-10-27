@@ -48,7 +48,7 @@ func (r *attachment) Metadata(ctx context.Context, req resource.MetadataRequest,
 func (r *attachment) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	resp.Schema = schema.Schema{
-		Description: "Attaches a volume to a VM of the same zone. Changing either side detaches and attaches again.",
+		Description: "Attaches a volume to a VM of the same cluster. Changing either side detaches and attaches again.",
 		Attributes: map[string]schema.Attribute{
 			"id":        schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}, Description: "The volume's id."},
 			"volume_id": schema.StringAttribute{Required: true, PlanModifiers: replace},

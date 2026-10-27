@@ -1,5 +1,5 @@
 data "openvicloud_templates" "here" {
-  zone_id = "singapore01"
+  cluster_id = "singapore01"
 }
 
 resource "openvicloud_ssh_key" "me" {
@@ -9,7 +9,7 @@ resource "openvicloud_ssh_key" "me" {
 
 resource "openvicloud_vm" "web" {
   name           = "web-1"
-  zone_id        = "singapore01"
+  cluster_id        = "singapore01"
   network_id     = openvicloud_network.web.id
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"

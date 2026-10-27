@@ -22,7 +22,7 @@ func TestNew_SendsTheTokenAndTheProviderVersion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = client.TitanInfrastructureEndpointsCatalogListZonesEndpointWithResponse(context.Background())
+	_, err = client.TitanInfrastructureEndpointsCatalogListClustersEndpointWithResponse(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestNew_SendsTheTokenAndTheProviderVersion(t *testing.T) {
 	if authorization != "Bearer ovc_token" {
 		t.Fatalf("Authorization = %q", authorization)
 	}
-	if path != "/v1/zones" {
+	if path != "/v1/clusters" {
 		t.Fatalf("path = %q (an api_url ending in / must not give //v1)", path)
 	}
 	if userAgent != "terraform-provider-openvicloud/1.2.3" {
@@ -39,12 +39,12 @@ func TestNew_SendsTheTokenAndTheProviderVersion(t *testing.T) {
 }
 
 func TestProblemOf_ReadsTheErrorBody(t *testing.T) {
-	problem := ProblemOf(&http.Response{StatusCode: 404}, []byte(`{"status":404,"title":"Zone x not found","code":"ZONE_NOT_FOUND"}`))
+	problem := ProblemOf(&http.Response{StatusCode: 404}, []byte(`{"status":404,"title":"Cluster x is not configured.","code":"CLUSTER_NOT_FOUND"}`))
 
-	if problem.Code != "ZONE_NOT_FOUND" || problem.Status != 404 {
+	if problem.Code != "CLUSTER_NOT_FOUND" || problem.Status != 404 {
 		t.Fatalf("problem = %+v", problem)
 	}
-	if problem.Error() != "HTTP 404 ZONE_NOT_FOUND: Zone x not found" {
+	if problem.Error() != "HTTP 404 CLUSTER_NOT_FOUND: Cluster x is not configured." {
 		t.Fatalf("Error() = %q", problem.Error())
 	}
 }

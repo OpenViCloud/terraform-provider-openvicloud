@@ -12,7 +12,7 @@ import (
 type templates struct{ client *api.ClientWithResponses }
 
 type templatesModel struct {
-	ZoneId    types.String    `tfsdk:"zone_id"`
+	ClusterId types.String    `tfsdk:"cluster_id"`
 	Templates []templateModel `tfsdk:"templates"`
 }
 
@@ -32,9 +32,9 @@ func (d *templates) Metadata(ctx context.Context, req datasource.MetadataRequest
 
 func (d *templates) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "The operating systems a VM can start from. With zone_id: only those ready in that zone; without: those ready in at least one zone.",
+		Description: "The operating systems a VM can start from. With cluster_id: only those ready in that cluster; without: those ready in at least one cluster.",
 		Attributes: map[string]schema.Attribute{
-			"zone_id": schema.StringAttribute{Optional: true, Description: "Only the templates ready in this zone."},
+			"cluster_id": schema.StringAttribute{Optional: true, Description: "Only the templates ready in this cluster."},
 			"templates": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
@@ -60,9 +60,9 @@ func (d *templates) Read(ctx context.Context, req datasource.ReadRequest, resp *
 		return
 	}
 	params := &api.TitanInfrastructureEndpointsCatalogListTemplatesEndpointParams{}
-	if !state.ZoneId.IsNull() && state.ZoneId.ValueString() != "" {
-		zone := state.ZoneId.ValueString()
-		params.ZoneId = &zone
+	if !state.ClusterId.IsNull() && state.ClusterId.ValueString() != "" {
+		cluster := state.ClusterId.ValueString()
+		params.ClusterId = &cluster
 	}
 	response, err := d.client.TitanInfrastructureEndpointsCatalogListTemplatesEndpointWithResponse(ctx, params)
 	if err != nil {

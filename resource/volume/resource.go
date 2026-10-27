@@ -32,7 +32,7 @@ type volume struct{ client *api.ClientWithResponses }
 type model struct {
 	Id               types.String `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
-	ZoneId           types.String `tfsdk:"zone_id"`
+	ClusterId        types.String `tfsdk:"cluster_id"`
 	VolumeOfferingId types.String `tfsdk:"volume_offering_id"`
 	SizeGb           types.Int32  `tfsdk:"size_gb"`
 }
@@ -57,7 +57,7 @@ func (r *volume) Schema(ctx context.Context, req resource.SchemaRequest, resp *r
 			"name": schema.StringAttribute{
 				Required: true, PlanModifiers: replace, Validators: []validator.String{stringvalidator.LengthBetween(1, 100)},
 			},
-			"zone_id":            schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Zone of the volume; the same as the VM it attaches to."},
+			"cluster_id":         schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Cluster of the volume; the same as the VM it attaches to."},
 			"volume_offering_id": schema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Kind of volume (data source openvicloud_volume_offerings)."},
 			"size_gb": schema.Int32Attribute{
 				Required: true, PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
@@ -99,7 +99,7 @@ func (r *volume) Create(ctx context.Context, req resource.CreateRequest, resp *r
 	}
 	size := plan.SizeGb.ValueInt32()
 	body := api.CreateVolumeCommand{
-		Name: plan.Name.ValueString(), ZoneId: plan.ZoneId.ValueString(),
+		Name: plan.Name.ValueString(), ClusterId: plan.ClusterId.ValueString(),
 		VolumeOfferingId: plan.VolumeOfferingId.ValueString(), SizeGb: &size,
 	}
 	id, err := api.SendCreate(time.Sleep, func(key string) (*string, *http.Response, []byte, error) {
@@ -214,7 +214,7 @@ func (r *volume) ImportState(ctx context.Context, req resource.ImportStateReques
 func fill(m *model, v api.VolumeQueryResult) {
 	m.Id = text(v.Id)
 	m.Name = text(v.Name)
-	m.ZoneId = text(v.ZoneId)
+	m.ClusterId = text(v.ClusterId)
 	m.VolumeOfferingId = text(v.VolumeOfferingId)
 	if v.SizeGb != nil {
 		m.SizeGb = types.Int32Value(*v.SizeGb)

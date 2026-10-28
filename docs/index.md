@@ -29,5 +29,5 @@ provider "openvicloud" {}
 
 ### Optional
 
-- `api_url` (String) Address of the OpenViCloud API. Defaults to OPENVICLOUD_API_URL, then https://api-titan-staging.openvicloud.com.
+- `api_url` (String) Address of the OpenViCloud API. Defaults to OPENVICLOUD_API_URL, then https://api.openvicloud.com.
 - `token` (String, Sensitive) API token (ovc_…) created on the portal. Defaults to OPENVICLOUD_TOKEN.

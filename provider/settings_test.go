@@ -12,10 +12,10 @@ func env(values map[string]string) func(string) string {
 	return func(name string) string { return values[name] }
 }
 
-func TestSettings_NothingSet_IsStagingAndAsksForTheToken(t *testing.T) {
+func TestSettings_NothingSet_IsProductionAndAsksForTheToken(t *testing.T) {
 	url, token, problem := Settings("", "", env(nil))
 
-	if url != DefaultApiUrl {
+	if url != "https://api.openvicloud.com" {
 		t.Fatalf("url = %q", url)
 	}
 	if token != "" || problem == "" || !strings.Contains(problem, "OPENVICLOUD_TOKEN") {

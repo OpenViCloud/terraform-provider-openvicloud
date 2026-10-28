@@ -17,11 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// DefaultApiUrl is staging until OpenViCloud has a production host, the same default as the openvicloud CLI.
-const DefaultApiUrl = "https://api-titan-staging.openvicloud.com"
+// DefaultApiUrl is OpenViCloud's production API, the same default as the openvicloud CLI.
+const DefaultApiUrl = "https://api.openvicloud.com"
 
 // Settings picks the API address and token: the provider block first, then OPENVICLOUD_API_URL and
-// OPENVICLOUD_TOKEN, then the staging address. problem is set when there is no token.
+// OPENVICLOUD_TOKEN, then the production address. problem is set when there is no token.
 func Settings(configuredUrl string, configuredToken string, getenv func(string) string) (url string, token string, problem string) {
 	url = strings.TrimSpace(configuredUrl)
 	if url == "" {

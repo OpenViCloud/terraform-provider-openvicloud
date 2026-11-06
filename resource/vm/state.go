@@ -19,11 +19,16 @@ func atRest(status api.VmStatus) bool {
 	return false
 }
 
-// Created reports whether a create is done: Incus says Running or Ready. Unknown, Stopped or Frozen without a failure
-// reason, and a status word the provider does not know keep it waiting: the API may add words without breaking /v1.
+// Created reports whether a create is done: Incus says Running or Ready. A new VM carries no failure reason until its
+// create gives up, and it may still go on to Running after that (the instance exists, the reconciler reads it), so a
+// reason fails the create whatever the status. Unknown, Stopped or Frozen without a reason, and a status word the
+// provider does not know keep it waiting: the API may add words without breaking /v1.
 func Created(v api.VmQueryResult) (bool, error) {
 	if v.Status == nil {
 		return false, nil
+	}
+	if v.RequestFailureReason != nil {
+		return false, fmt.Errorf("the VM was not created, it is %s: %s", *v.Status, *v.RequestFailureReason)
 	}
 	switch *v.Status {
 	case api.VmStatusRunning, api.VmStatusReady:
@@ -34,11 +39,6 @@ func Created(v api.VmQueryResult) (bool, error) {
 		return false, fmt.Errorf("the VM was not created: Incus no longer has its instance")
 	case api.VmStatusDeleted:
 		return false, fmt.Errorf("the VM was deleted before its create finished")
-	case api.VmStatusStopped, api.VmStatusFrozen:
-		// A create that gave up after Incus made the instance rests at the Incus word, with the reason.
-		if v.RequestFailureReason != nil {
-			return false, fmt.Errorf("the VM was not created, it is %s: %s", *v.Status, *v.RequestFailureReason)
-		}
 	}
 	return false, nil
 }

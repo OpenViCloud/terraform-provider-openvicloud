@@ -55,12 +55,15 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
-func TestCreated_GivenUpAfterTheInstanceExists_FailsWithTheReason(t *testing.T) {
-	v := aVm(api.VmStatusStopped)
-	v.RequestFailureReason = ptr("cloud-init never reported")
-	_, err := Created(v)
-	if err == nil || !strings.Contains(err.Error(), "cloud-init never reported") {
-		t.Fatalf("err = %v", err)
+// The instance exists, so the VM goes on from Unknown to whatever the reconciler reads, Running included.
+func TestCreated_GivenUpAfterTheInstanceExists_FailsWithTheReason_ThoughItRunsLater(t *testing.T) {
+	for _, status := range []api.VmStatus{api.VmStatusUnknown, api.VmStatusStopped, api.VmStatusRunning} {
+		v := aVm(status)
+		v.RequestFailureReason = ptr("cloud-init never reported")
+		_, err := Created(v)
+		if err == nil || !strings.Contains(err.Error(), "cloud-init never reported") {
+			t.Fatalf("%s: err = %v", status, err)
+		}
 	}
 }
 

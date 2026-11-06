@@ -39,6 +39,15 @@ func TestCreated_UnknownStoppedOrFrozen_KeepsWaiting(t *testing.T) {
 	}
 }
 
+// A snapshot create or revert runs on the instance: the VM returns to the Incus word it held, so a create that
+// polls past it is not done and not failed.
+func TestCreated_WhileASnapshotRuns_KeepsWaiting(t *testing.T) {
+	done, err := Created(aVm(api.VmStatusSnapshotting))
+	if done || err != nil {
+		t.Fatalf("done = %v, err = %v", done, err)
+	}
+}
+
 func TestCreated_AStateTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
 	done, err := Created(aVm(api.VmStatus("Migrating")))
 	if done || err != nil {
@@ -104,7 +113,7 @@ func TestGone_StatusDeleted_IsGone(t *testing.T) {
 }
 
 func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
-	for _, status := range []api.VmStatus{api.VmStatusDeleting, api.VmStatusUnknown, api.VmStatus("Migrating")} {
+	for _, status := range []api.VmStatus{api.VmStatusDeleting, api.VmStatusUnknown, api.VmStatusSnapshotting, api.VmStatus("Migrating")} {
 		v := aVm(status)
 		gone, err := Gone(http.StatusOK, &v)
 		if gone || err != nil {
@@ -134,6 +143,13 @@ func TestDeletable_AtRestOrStoppingOrDeleting_Goes(t *testing.T) {
 		if !Deletable(aVm(status)) {
 			t.Fatalf("%s: a delete wins over stop and start, repeats a pending delete, and removes a failed create", status)
 		}
+	}
+}
+
+// The API refuses a delete while a snapshot create or revert runs (VM_INVALID_STATUS): the provider waits for it.
+func TestDeletable_WhileASnapshotRuns_Waits(t *testing.T) {
+	if Deletable(aVm(api.VmStatusSnapshotting)) {
+		t.Fatal("the API refuses to delete a VM while a snapshot create or revert runs")
 	}
 }
 

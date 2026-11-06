@@ -82,7 +82,9 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 		return err
 	}
 	for _, v := range *vms.JSON200 {
-		alive("VM", v.Name, v.CurrentExistence)
+		if v.Status == nil || *v.Status != api.VmStatusDeleted {
+			alive("VM", v.Name, nil)
+		}
 	}
 	volumes, err := client.TitanInfrastructureEndpointsVolumeListVolumesEndpointWithResponse(ctx)
 	if err != nil {
@@ -161,9 +163,9 @@ func TestAccVmWithKeyAndVolume_CreateImportRenameDestroy(t *testing.T) {
 						if err != nil {
 							return err
 						}
-						state := vm.JSON200.CurrentState
-						if state == nil || (*state != api.VmStateRunning && *state != api.VmStateReady) {
-							return fmt.Errorf("the API shows the VM in state %v after apply, want Running or Ready", state)
+						status := vm.JSON200.Status
+						if status == nil || (*status != api.VmStatusRunning && *status != api.VmStatusReady) {
+							return fmt.Errorf("the API shows the VM in status %v after apply, want Running or Ready", status)
 						}
 						volume, err := listedVolume(client, volumeId)
 						if err != nil {

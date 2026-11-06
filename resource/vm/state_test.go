@@ -10,36 +10,44 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
-func aVm(existence api.CurrentExistence, state *api.VmState, transition *api.VmTransition) api.VmQueryResult {
-	return api.VmQueryResult{CurrentExistence: &existence, CurrentState: state, Transition: transition,
-		DesiredExistence: ptr(api.DesiredExistenceExists)}
+func aVm(status api.VmStatus) api.VmQueryResult {
+	return api.VmQueryResult{Status: &status}
 }
 
 func TestCreated_WhileCreating_KeepsWaiting(t *testing.T) {
-	done, err := Created(aVm(api.CurrentExistenceNotCreated, nil, ptr(api.VmTransitionCreating)))
+	done, err := Created(aVm(api.VmStatusCreating))
 	if done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
 
 func TestCreated_RunningOrReady_IsDone(t *testing.T) {
-	for _, state := range []api.VmState{api.VmStateRunning, api.VmStateReady} {
-		done, err := Created(aVm(api.CurrentExistenceExists, ptr(state), nil))
+	for _, status := range []api.VmStatus{api.VmStatusRunning, api.VmStatusReady} {
+		done, err := Created(aVm(status))
 		if !done || err != nil {
-			t.Fatalf("%s: done = %v, err = %v", state, done, err)
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
+		}
+	}
+}
+
+func TestCreated_UnknownStoppedOrFrozen_KeepsWaiting(t *testing.T) {
+	for _, status := range []api.VmStatus{api.VmStatusUnknown, api.VmStatusStopped, api.VmStatusFrozen} {
+		done, err := Created(aVm(status))
+		if done || err != nil {
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
 		}
 	}
 }
 
 func TestCreated_AStateTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
-	done, err := Created(aVm(api.CurrentExistenceExists, ptr(api.VmState("Migrating")), nil))
+	done, err := Created(aVm(api.VmStatus("Migrating")))
 	if done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
 
 func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	v := aVm(api.CurrentExistenceNotCreated, nil, nil)
+	v := aVm(api.VmStatusFailed)
 	v.RequestFailureReason = ptr("template not on the cluster")
 	_, err := Created(v)
 	if err == nil || !strings.Contains(err.Error(), "template not on the cluster") {
@@ -47,17 +55,36 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
+// The instance exists, so the VM goes on from Unknown to whatever the reconciler reads, Running included.
+func TestCreated_GivenUpAfterTheInstanceExists_FailsWithTheReason_ThoughItRunsLater(t *testing.T) {
+	for _, status := range []api.VmStatus{api.VmStatusUnknown, api.VmStatusStopped, api.VmStatusRunning} {
+		v := aVm(status)
+		v.RequestFailureReason = ptr("cloud-init never reported")
+		_, err := Created(v)
+		if err == nil || !strings.Contains(err.Error(), "cloud-init never reported") {
+			t.Fatalf("%s: err = %v", status, err)
+		}
+	}
+}
+
 func TestCreated_IncusSaysError_Fails(t *testing.T) {
-	_, err := Created(aVm(api.CurrentExistenceExists, ptr(api.VmStateError), nil))
+	_, err := Created(aVm(api.VmStatusError))
 	if err == nil || !strings.Contains(err.Error(), "Error") {
 		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestCreated_InstanceVanished_Fails(t *testing.T) {
-	_, err := Created(aVm(api.CurrentExistenceNotFound, nil, nil))
+	_, err := Created(aVm(api.VmStatusNotFound))
 	if err == nil {
 		t.Fatal("a VM Incus no longer has is not created")
+	}
+}
+
+func TestCreated_DeletedBeforeTheCreateFinished_Fails(t *testing.T) {
+	_, err := Created(aVm(api.VmStatusDeleted))
+	if err == nil {
+		t.Fatal("a deleted VM is not created")
 	}
 }
 
@@ -68,8 +95,8 @@ func TestGone_NotFound_IsGone(t *testing.T) {
 	}
 }
 
-func TestGone_ExistenceDeleted_IsGone(t *testing.T) {
-	v := aVm(api.CurrentExistenceDeleted, nil, nil)
+func TestGone_StatusDeleted_IsGone(t *testing.T) {
+	v := aVm(api.VmStatusDeleted)
 	gone, err := Gone(http.StatusOK, &v)
 	if !gone || err != nil {
 		t.Fatalf("gone = %v, err = %v", gone, err)
@@ -77,29 +104,41 @@ func TestGone_ExistenceDeleted_IsGone(t *testing.T) {
 }
 
 func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
-	v := aVm(api.CurrentExistenceExists, ptr(api.VmStateRunning), ptr(api.VmTransitionDeleting))
-	gone, err := Gone(http.StatusOK, &v)
-	if gone || err != nil {
-		t.Fatalf("gone = %v, err = %v", gone, err)
+	for _, status := range []api.VmStatus{api.VmStatusDeleting, api.VmStatusUnknown, api.VmStatus("Migrating")} {
+		v := aVm(status)
+		gone, err := Gone(http.StatusOK, &v)
+		if gone || err != nil {
+			t.Fatalf("%s: gone = %v, err = %v", status, gone, err)
+		}
+	}
+}
+
+func TestGone_DeleteGivenUp_FailsWithTheReason(t *testing.T) {
+	v := aVm(api.VmStatusRunning)
+	v.RequestFailureReason = ptr("Incus refused to delete the instance")
+	_, err := Gone(http.StatusOK, &v)
+	if err == nil || !strings.Contains(err.Error(), "Incus refused to delete the instance") || !strings.Contains(err.Error(), "Running") {
+		t.Fatalf("err = %v", err)
 	}
 }
 
 func TestDeletable_WhileCreating_Waits(t *testing.T) {
-	if Deletable(aVm(api.CurrentExistenceNotCreated, nil, ptr(api.VmTransitionCreating))) {
+	if Deletable(aVm(api.VmStatusCreating)) {
 		t.Fatal("the API refuses to delete a VM whose create is pending")
 	}
 }
 
 func TestDeletable_AtRestOrStoppingOrDeleting_Goes(t *testing.T) {
-	for _, transition := range []*api.VmTransition{nil, ptr(api.VmTransitionStopping), ptr(api.VmTransitionStarting), ptr(api.VmTransitionDeleting)} {
-		if !Deletable(aVm(api.CurrentExistenceExists, ptr(api.VmStateRunning), transition)) {
-			t.Fatalf("transition %v: a delete wins over stop and start, and repeats a pending delete", transition)
+	for _, status := range []api.VmStatus{api.VmStatusRunning, api.VmStatusStopped, api.VmStatusUnknown, api.VmStatusNotFound,
+		api.VmStatusFailed, api.VmStatusStopping, api.VmStatusStarting, api.VmStatusDeleting} {
+		if !Deletable(aVm(status)) {
+			t.Fatalf("%s: a delete wins over stop and start, repeats a pending delete, and removes a failed create", status)
 		}
 	}
 }
 
-func TestDeletable_ATransitionTheProviderDoesNotKnow_Waits(t *testing.T) {
-	if Deletable(aVm(api.CurrentExistenceExists, ptr(api.VmStateRunning), ptr(api.VmTransition("Migrating")))) {
+func TestDeletable_AStatusTheProviderDoesNotKnow_Waits(t *testing.T) {
+	if Deletable(aVm(api.VmStatus("Migrating"))) {
 		t.Fatal("an unknown request may refuse the delete; wait it out")
 	}
 }

@@ -9,51 +9,79 @@ import (
 	"github.com/OpenViCloud/terraform-provider-openvicloud/api"
 )
 
-// Created reports whether a create is done: Incus says Running or Ready and no request is pending. A state word the
-// provider does not know keeps it waiting: the API may add words without breaking /v1.
+// atRest is every status in which no request waits on the VM and Incus has said what its instance is doing. Unknown
+// is not: the next observation replaces it.
+func atRest(status api.VmStatus) bool {
+	switch status {
+	case api.VmStatusRunning, api.VmStatusReady, api.VmStatusStopped, api.VmStatusFrozen, api.VmStatusError:
+		return true
+	}
+	return false
+}
+
+// Created reports whether a create is done: Incus says Running or Ready. A new VM carries no failure reason until its
+// create gives up, and it may still go on to Running after that (the instance exists, the reconciler reads it), so a
+// reason fails the create whatever the status. Unknown, Stopped or Frozen without a reason, and a status word the
+// provider does not know keep it waiting: the API may add words without breaking /v1.
 func Created(v api.VmQueryResult) (bool, error) {
-	if v.Transition != nil {
+	if v.Status == nil {
 		return false, nil
 	}
 	if v.RequestFailureReason != nil {
-		return false, fmt.Errorf("the VM was not created: %s", *v.RequestFailureReason)
+		return false, fmt.Errorf("the VM was not created, it is %s: %s", *v.Status, *v.RequestFailureReason)
 	}
-	if v.CurrentExistence != nil && *v.CurrentExistence == api.CurrentExistenceNotFound {
+	switch *v.Status {
+	case api.VmStatusRunning, api.VmStatusReady:
+		return true, nil
+	case api.VmStatusFailed, api.VmStatusError:
+		return false, fmt.Errorf("the VM was not created, it is %s: %s", *v.Status, reason(v))
+	case api.VmStatusNotFound:
 		return false, fmt.Errorf("the VM was not created: Incus no longer has its instance")
-	}
-	if v.CurrentState == nil {
-		return false, nil
-	}
-	switch *v.CurrentState {
-	case api.VmStateRunning, api.VmStateReady:
-		return v.CurrentExistence != nil && *v.CurrentExistence == api.CurrentExistenceExists, nil
-	case api.VmStateError:
-		return false, fmt.Errorf("the VM was not created: Incus reports the instance in state Error")
+	case api.VmStatusDeleted:
+		return false, fmt.Errorf("the VM was deleted before its create finished")
 	}
 	return false, nil
 }
 
-// Gone reports whether a VM is gone: 404, or the API keeps the row as Deleted. A VM delete that does not go through
-// keeps its request pending, so it ends in the wait's timeout, not here.
-func Gone(status int, v *api.VmQueryResult) (bool, error) {
-	if status == http.StatusNotFound {
+// Gone reports whether a VM is gone: 404, or the API still answers with status Deleted. A delete that ends in any
+// other settled status did not go through; Unknown is waited out like a pending request.
+func Gone(code int, v *api.VmQueryResult) (bool, error) {
+	if code == http.StatusNotFound {
 		return true, nil
 	}
-	if v == nil {
+	if v == nil || v.Status == nil {
 		return false, nil
 	}
-	return v.CurrentExistence != nil && *v.CurrentExistence == api.CurrentExistenceDeleted, nil
+	status := *v.Status
+	if status == api.VmStatusDeleted {
+		return true, nil
+	}
+	if atRest(status) || status == api.VmStatusNotFound || status == api.VmStatusFailed {
+		return false, fmt.Errorf("the VM was not deleted, it is %s: %s", status, reason(*v))
+	}
+	return false, nil
 }
 
 // Deletable reports whether the API takes a delete now: it refuses one while the create is pending. A delete wins over
-// a pending stop or start, and repeats a pending delete; a request the provider does not know is waited out.
+// a pending stop or start, and repeats a pending delete; a status the provider does not know is waited out.
 func Deletable(v api.VmQueryResult) bool {
-	if v.Transition == nil {
-		return true
+	if v.Status == nil {
+		return false
 	}
-	switch *v.Transition {
-	case api.VmTransitionStopping, api.VmTransitionStarting, api.VmTransitionDeleting:
+	status := *v.Status
+	switch {
+	case atRest(status):
+		return true
+	case status == api.VmStatusUnknown, status == api.VmStatusStarting, status == api.VmStatusStopping,
+		status == api.VmStatusDeleting, status == api.VmStatusNotFound, status == api.VmStatusFailed, status == api.VmStatusDeleted:
 		return true
 	}
 	return false
+}
+
+func reason(v api.VmQueryResult) string {
+	if v.RequestFailureReason == nil {
+		return "the API gives no reason"
+	}
+	return *v.RequestFailureReason
 }

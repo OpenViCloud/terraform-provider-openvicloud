@@ -199,7 +199,7 @@ func (r *vm) Read(ctx context.Context, req resource.ReadRequest, resp *resource.
 		return
 	}
 	found := *response.JSON200
-	if found.CurrentExistence != nil && *found.CurrentExistence == api.CurrentExistenceDeleted {
+	if found.Status != nil && *found.Status == api.VmStatusDeleted {
 		resp.State.RemoveResource(ctx)
 		return
 	}

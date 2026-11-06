@@ -204,7 +204,10 @@ resource "openvicloud_vm" "v" {
 						if err != nil {
 							return err
 						}
-						if v.StatusCode() != http.StatusOK || v.JSON200.CurrentExistence == nil || *v.JSON200.CurrentExistence != api.CurrentExistenceExists {
+						if v.StatusCode() != http.StatusOK {
+							return errors.New("the imported VM is not on the API after apply")
+						}
+						if alive, _ := vm.Created(*v.JSON200); !alive {
 							return errors.New("the imported VM is not alive on the API after apply")
 						}
 						return nil

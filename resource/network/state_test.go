@@ -9,34 +9,35 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
-func aNetwork(existence api.CurrentExistence, state *api.NetworkStatus, transition *api.NetworkTransition) api.NetworkQueryResult {
-	return api.NetworkQueryResult{CurrentExistence: &existence, CurrentState: state, Transition: transition,
-		DesiredExistence: ptr(api.DesiredExistenceExists)}
+func aNetwork(status api.NetworkStatus) api.NetworkQueryResult {
+	return api.NetworkQueryResult{Status: &status}
 }
 
 func TestCreated_WhileCreating_KeepsWaiting(t *testing.T) {
-	done, err := Created(aNetwork(api.CurrentExistenceNotCreated, nil, ptr(api.NetworkTransitionCreating)))
+	done, err := Created(aNetwork(api.NetworkStatusCreating))
 	if done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
 
 func TestCreated_IncusSaysCreated_IsDone(t *testing.T) {
-	done, err := Created(aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatusCreated), nil))
+	done, err := Created(aNetwork(api.NetworkStatusCreated))
 	if !done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
 
-func TestCreated_AStateTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
-	done, err := Created(aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatus("Rebuilding")), nil))
-	if done || err != nil {
-		t.Fatalf("done = %v, err = %v", done, err)
+func TestCreated_AStatusTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
+	for _, status := range []api.NetworkStatus{"Rebuilding", api.NetworkStatusPending, api.NetworkStatusUnknown} {
+		done, err := Created(aNetwork(status))
+		if done || err != nil {
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
+		}
 	}
 }
 
 func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	n := aNetwork(api.CurrentExistenceNotCreated, nil, nil)
+	n := aNetwork(api.NetworkStatusFailed)
 	n.RequestFailureReason = ptr("Incus refused the network")
 
 	done, err := Created(n)
@@ -45,19 +46,27 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
+func TestCreated_FailedWithoutAReason_OrDeleted_Fails(t *testing.T) {
+	for _, status := range []api.NetworkStatus{api.NetworkStatusFailed, api.NetworkStatusDeleted} {
+		done, err := Created(aNetwork(status))
+		if done || err == nil {
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
+		}
+	}
+}
+
 func TestGone_NotFoundOrDeleted_IsGone(t *testing.T) {
 	if done, err := Gone(404, nil); !done || err != nil {
 		t.Fatalf("404: done = %v, err = %v", done, err)
 	}
-	deleted := aNetwork(api.CurrentExistenceDeleted, nil, nil)
+	deleted := aNetwork(api.NetworkStatusDeleted)
 	if done, err := Gone(200, &deleted); !done || err != nil {
 		t.Fatalf("Deleted: done = %v, err = %v", done, err)
 	}
 }
 
 func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
-	n := aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatusCreated), ptr(api.NetworkTransitionDeleting))
-	n.DesiredExistence = ptr(api.DesiredExistenceDeleted)
+	n := aNetwork(api.NetworkStatusDeleting)
 
 	if done, err := Gone(200, &n); done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
@@ -65,7 +74,7 @@ func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
 }
 
 func TestGone_DeleteGivenUp_FailsWithTheReason(t *testing.T) {
-	n := aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatusCreated), nil)
+	n := aNetwork(api.NetworkStatusCreated)
 	n.RequestFailureReason = ptr("Incus refused the delete")
 
 	done, err := Gone(200, &n)
@@ -75,10 +84,10 @@ func TestGone_DeleteGivenUp_FailsWithTheReason(t *testing.T) {
 }
 
 func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
-	for _, transition := range []*api.NetworkTransition{nil, ptr(api.NetworkTransitionDeleting)} {
-		n := aNetwork(api.CurrentExistenceExists, ptr(api.NetworkStatusCreated), transition)
+	for _, status := range []api.NetworkStatus{api.NetworkStatusCreated, api.NetworkStatusDeleting, api.NetworkStatusFailed} {
+		n := aNetwork(status)
 		if !Deletable(&n) {
-			t.Fatalf("transition %v", transition)
+			t.Fatalf("status %s", status)
 		}
 	}
 	if !Deletable(nil) {
@@ -87,7 +96,7 @@ func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
 }
 
 func TestDeletable_WhileCreating_Waits(t *testing.T) {
-	n := aNetwork(api.CurrentExistenceNotCreated, nil, ptr(api.NetworkTransitionCreating))
+	n := aNetwork(api.NetworkStatusCreating)
 	if Deletable(&n) {
 		t.Fatal("the API refuses to delete a network whose create is pending")
 	}

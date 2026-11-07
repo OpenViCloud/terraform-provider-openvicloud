@@ -19,27 +19,43 @@ func Find(rules []api.FirewallRuleQueryResult, id string) *api.FirewallRuleQuery
 	return nil
 }
 
-// Created reports whether a create is done: the rule exists in the ACL and nothing is pending.
+// Created reports whether a create is done: Incus holds the rule (enabled, disabled or logged), or the API has not read
+// it back yet (Unknown, which a rule has only once its create has succeeded). A reason fails the create whatever the
+// status; Failed, NotFound and Deleted fail it; Creating and a status word the provider does not know keep it waiting.
 func Created(rule api.FirewallRuleQueryResult) (bool, error) {
-	if rule.Transition != nil {
+	if rule.Status == nil {
 		return false, nil
 	}
 	if rule.RequestFailureReason != nil {
-		return false, fmt.Errorf("the firewall rule was not created: %s", *rule.RequestFailureReason)
+		return false, fmt.Errorf("the firewall rule was not created, it is %s: %s", *rule.Status, *rule.RequestFailureReason)
 	}
-	return rule.CurrentExistence != nil && *rule.CurrentExistence == api.CurrentExistenceExists, nil
+	switch *rule.Status {
+	case api.FirewallRuleStatusEnabled, api.FirewallRuleStatusDisabled, api.FirewallRuleStatusLogged, api.FirewallRuleStatusUnknown:
+		return true, nil
+	case api.FirewallRuleStatusFailed, api.FirewallRuleStatusNotFound:
+		return false, fmt.Errorf("the firewall rule was not created, it is %s", *rule.Status)
+	case api.FirewallRuleStatusDeleted:
+		return false, fmt.Errorf("the firewall rule was deleted before its create finished")
+	}
+	return false, nil
 }
 
-// Gone reports whether a rule is gone: no longer in the list. A delete Incus refused puts the desired existence back
-// to Exists, with nothing pending and the reason set.
+// Gone reports whether a rule is gone: no longer in the list, or Deleted. A delete Incus refused returns the rule to
+// the status it had, with the reason set; Deleting, and Creating, are waited out.
 func Gone(rule *api.FirewallRuleQueryResult) (bool, error) {
 	if rule == nil {
 		return true, nil
 	}
-	refused := rule.Transition == nil && rule.DesiredExistence != nil && *rule.DesiredExistence == api.DesiredExistenceExists &&
+	if rule.Status == nil {
+		return false, nil
+	}
+	if *rule.Status == api.FirewallRuleStatusDeleted {
+		return true, nil
+	}
+	refused := *rule.Status != api.FirewallRuleStatusDeleting && *rule.Status != api.FirewallRuleStatusCreating &&
 		rule.RequestFailureReason != nil
 	if refused {
-		return false, fmt.Errorf("the firewall rule was not deleted: %s", *rule.RequestFailureReason)
+		return false, fmt.Errorf("the firewall rule was not deleted, it is %s: %s", *rule.Status, *rule.RequestFailureReason)
 	}
 	return false, nil
 }
@@ -56,5 +72,5 @@ func SplitImportId(id string) (network string, rule string, ok bool) {
 // Deletable reports whether the API takes a delete now: it refuses one while the create is pending. A pending delete is
 // repeated; a rule no longer listed needs no wait.
 func Deletable(rule *api.FirewallRuleQueryResult) bool {
-	return rule == nil || rule.Transition == nil || *rule.Transition == api.FirewallRuleTransitionDeleting
+	return rule == nil || rule.Status == nil || *rule.Status != api.FirewallRuleStatusCreating
 }

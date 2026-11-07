@@ -183,7 +183,7 @@ func (r *network) Read(ctx context.Context, req resource.ReadRequest, resp *reso
 		return
 	}
 	found := *response.JSON200
-	if found.CurrentExistence != nil && *found.CurrentExistence == api.CurrentExistenceDeleted {
+	if found.Status != nil && *found.Status == api.NetworkStatusDeleted {
 		resp.State.RemoveResource(ctx)
 		return
 	}

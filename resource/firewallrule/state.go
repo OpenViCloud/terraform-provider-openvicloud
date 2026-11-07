@@ -20,8 +20,9 @@ func Find(rules []api.FirewallRuleQueryResult, id string) *api.FirewallRuleQuery
 }
 
 // Created reports whether a create is done: Incus holds the rule (enabled, disabled or logged), or the API has not read
-// it back yet (Unknown, which a rule has only once its create has succeeded). A reason fails the create whatever the
-// status; Failed, NotFound and Deleted fail it; Creating and a status word the provider does not know keep it waiting.
+// it back yet (Unknown with no failure reason, which a rule has only after a create that succeeded). A reason fails the
+// create whatever the status; Failed, NotFound and Deleted fail it; Creating and a status word the provider does not
+// know keep it waiting.
 func Created(rule api.FirewallRuleQueryResult) (bool, error) {
 	if rule.Status == nil {
 		return false, nil
@@ -41,7 +42,7 @@ func Created(rule api.FirewallRuleQueryResult) (bool, error) {
 }
 
 // Gone reports whether a rule is gone: no longer in the list, or Deleted. A delete Incus refused returns the rule to
-// the status it had, with the reason set; Deleting, and Creating, are waited out.
+// an Incus word (Unknown when none is known), with the reason set; Deleting, and Creating, are waited out.
 func Gone(rule *api.FirewallRuleQueryResult) (bool, error) {
 	if rule == nil {
 		return true, nil

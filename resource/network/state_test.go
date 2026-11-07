@@ -27,8 +27,8 @@ func TestCreated_IncusSaysCreated_IsDone(t *testing.T) {
 	}
 }
 
-func TestCreated_AStatusTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
-	for _, status := range []api.NetworkStatus{"Rebuilding", api.NetworkStatusPending, api.NetworkStatusUnknown} {
+func TestCreated_AnyOtherStatus_KeepsWaiting(t *testing.T) {
+	for _, status := range []api.NetworkStatus{"Rebuilding", api.NetworkStatusPending, api.NetworkStatusUnknown, api.NetworkStatusErrored, api.NetworkStatusNotFound} {
 		done, err := Created(aNetwork(status))
 		if done || err != nil {
 			t.Fatalf("%s: done = %v, err = %v", status, done, err)

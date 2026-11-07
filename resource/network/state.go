@@ -9,8 +9,9 @@ import (
 )
 
 // Created reports whether a create is done: the status is Created. A new network carries no failure reason until its
-// create gives up, so a reason fails the create whatever the status. Failed and Deleted fail it; Creating, Pending,
-// Unknown and a status word the provider does not know keep it waiting: the API may add words without breaking /v1.
+// create gives up, so a reason fails the create whatever the status. Failed and Deleted fail it; every other status
+// keeps it waiting (Creating, Pending, Errored, Unavailable, Unknown, NotFound, Deleting, and a word the provider does
+// not know: the API may add words without breaking /v1).
 func Created(n api.NetworkQueryResult) (bool, error) {
 	if n.Status == nil {
 		return false, nil
@@ -30,7 +31,7 @@ func Created(n api.NetworkQueryResult) (bool, error) {
 }
 
 // Gone reports whether a network is gone: 404, or the API keeps the row as Deleted. A delete Incus refused returns the
-// network to the status it had, with the reason set; Deleting, and Creating, are waited out.
+// network to an Incus word (Unknown when none is known), with the reason set; Deleting, and Creating, are waited out.
 func Gone(status int, n *api.NetworkQueryResult) (bool, error) {
 	if status == http.StatusNotFound {
 		return true, nil

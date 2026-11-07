@@ -9,13 +9,12 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
-func aRule(id string, existence api.CurrentExistence, transition *api.FirewallRuleTransition) api.FirewallRuleQueryResult {
-	return api.FirewallRuleQueryResult{Id: ptr(id), CurrentExistence: &existence, Transition: transition,
-		DesiredExistence: ptr(api.DesiredExistenceExists)}
+func aRule(id string, status api.FirewallRuleStatus) api.FirewallRuleQueryResult {
+	return api.FirewallRuleQueryResult{Id: ptr(id), Status: &status}
 }
 
 func TestFind_PicksTheRuleById(t *testing.T) {
-	rules := []api.FirewallRuleQueryResult{aRule("a", api.CurrentExistenceExists, nil), aRule("b", api.CurrentExistenceExists, nil)}
+	rules := []api.FirewallRuleQueryResult{aRule("a", api.FirewallRuleStatusEnabled), aRule("b", api.FirewallRuleStatusEnabled)}
 
 	if found := Find(rules, "b"); found == nil || *found.Id != "b" {
 		t.Fatalf("found = %+v", found)
@@ -26,16 +25,25 @@ func TestFind_PicksTheRuleById(t *testing.T) {
 }
 
 func TestCreated_WhileCreating_KeepsWaiting_ThenDone(t *testing.T) {
-	if done, err := Created(aRule("a", api.CurrentExistenceNotCreated, ptr(api.FirewallRuleTransitionCreating))); done || err != nil {
+	if done, err := Created(aRule("a", api.FirewallRuleStatusCreating)); done || err != nil {
 		t.Fatalf("creating: done = %v, err = %v", done, err)
 	}
-	if done, err := Created(aRule("a", api.CurrentExistenceExists, nil)); !done || err != nil {
-		t.Fatalf("exists: done = %v, err = %v", done, err)
+	for _, status := range []api.FirewallRuleStatus{api.FirewallRuleStatusEnabled, api.FirewallRuleStatusDisabled,
+		api.FirewallRuleStatusLogged, api.FirewallRuleStatusUnknown} {
+		if done, err := Created(aRule("a", status)); !done || err != nil {
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
+		}
+	}
+}
+
+func TestCreated_AStatusTheProviderDoesNotKnow_KeepsWaiting(t *testing.T) {
+	if done, err := Created(aRule("a", api.FirewallRuleStatus("Rebuilding"))); done || err != nil {
+		t.Fatalf("done = %v, err = %v", done, err)
 	}
 }
 
 func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	rule := aRule("a", api.CurrentExistenceNotCreated, nil)
+	rule := aRule("a", api.FirewallRuleStatusFailed)
 	rule.RequestFailureReason = ptr("ACL refused")
 
 	done, err := Created(rule)
@@ -44,16 +52,27 @@ func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 	}
 }
 
+func TestCreated_FailedNotFoundOrDeleted_FailsWithoutAReason(t *testing.T) {
+	for _, status := range []api.FirewallRuleStatus{api.FirewallRuleStatusFailed, api.FirewallRuleStatusNotFound, api.FirewallRuleStatusDeleted} {
+		if done, err := Created(aRule("a", status)); done || err == nil {
+			t.Fatalf("%s: done = %v, err = %v", status, done, err)
+		}
+	}
+}
+
 func TestGone_LeavingTheList_IsGone_ARefusedDelete_Fails(t *testing.T) {
 	if done, err := Gone(nil); !done || err != nil {
 		t.Fatalf("not listed: done = %v, err = %v", done, err)
 	}
-	deleting := aRule("a", api.CurrentExistenceExists, ptr(api.FirewallRuleTransitionDeleting))
-	deleting.DesiredExistence = ptr(api.DesiredExistenceDeleted)
+	deleted := aRule("a", api.FirewallRuleStatusDeleted)
+	if done, err := Gone(&deleted); !done || err != nil {
+		t.Fatalf("deleted: done = %v, err = %v", done, err)
+	}
+	deleting := aRule("a", api.FirewallRuleStatusDeleting)
 	if done, err := Gone(&deleting); done || err != nil {
 		t.Fatalf("deleting: done = %v, err = %v", done, err)
 	}
-	refused := aRule("a", api.CurrentExistenceExists, nil)
+	refused := aRule("a", api.FirewallRuleStatusEnabled)
 	refused.RequestFailureReason = ptr("ACL locked")
 	if done, err := Gone(&refused); done || err == nil || !strings.Contains(err.Error(), "ACL locked") {
 		t.Fatalf("refused: done = %v, err = %v", done, err)
@@ -73,10 +92,10 @@ func TestImportId_IsNetworkSlashRule(t *testing.T) {
 }
 
 func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
-	for _, transition := range []*api.FirewallRuleTransition{nil, ptr(api.FirewallRuleTransitionDeleting)} {
-		rule := aRule("r", api.CurrentExistenceExists, transition)
+	for _, status := range []api.FirewallRuleStatus{api.FirewallRuleStatusEnabled, api.FirewallRuleStatusDeleting, api.FirewallRuleStatusFailed} {
+		rule := aRule("r", status)
 		if !Deletable(&rule) {
-			t.Fatalf("transition %v", transition)
+			t.Fatalf("status %s", status)
 		}
 	}
 	if !Deletable(nil) {
@@ -85,7 +104,7 @@ func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
 }
 
 func TestDeletable_WhileCreating_Waits(t *testing.T) {
-	rule := aRule("r", api.CurrentExistenceNotCreated, ptr(api.FirewallRuleTransitionCreating))
+	rule := aRule("r", api.FirewallRuleStatusCreating)
 	if Deletable(&rule) {
 		t.Fatal("the API refuses to delete a rule whose create is pending")
 	}

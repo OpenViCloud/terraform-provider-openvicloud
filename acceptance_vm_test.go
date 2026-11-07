@@ -112,7 +112,9 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 		return err
 	}
 	for _, n := range *networks.JSON200 {
-		alive("network", n.Name, n.CurrentExistence)
+		if n.Status == nil || *n.Status != api.NetworkStatusDeleted {
+			alive("network", n.Name, nil)
+		}
 	}
 	if len(left) > 0 {
 		return fmt.Errorf("left after destroy: %s", strings.Join(left, ", "))

@@ -20,33 +20,52 @@ func Find(list []api.VolumeQueryResult, id string) *api.VolumeQueryResult {
 	return nil
 }
 
-// Created reports whether a create is done: the volume exists on Incus and no request is pending. A create Incus gave
-// up on keeps the volume listed with the reason set; it leaves the list only when someone deleted it, so a volume that
-// left the list was not created.
+// waits reports whether a request waits on its command. A volume has one status; Creating, Attaching, Detaching and
+// Deleting are the four that wait (titan-ops features/volume/design.md#volume-state-is-existence).
+func waits(v *api.VolumeQueryResult) bool {
+	if v.Status == nil {
+		return false
+	}
+	switch *v.Status {
+	case api.VolumeStatusCreating, api.VolumeStatusAttaching, api.VolumeStatusDetaching, api.VolumeStatusDeleting:
+		return true
+	}
+	return false
+}
+
+func hasStatus(v *api.VolumeQueryResult, status api.VolumeStatus) bool {
+	return v.Status != nil && *v.Status == status
+}
+
+// Created reports whether a create is done: Incus holds the volume and no request is pending. A create Incus gave up
+// on keeps the volume listed as Failed with the reason set; it leaves the list only when someone deleted it, so a
+// volume that left the list was not created.
 func Created(v *api.VolumeQueryResult) (bool, error) {
 	if v == nil {
 		return false, errors.New("the volume was not created: it is no longer listed")
 	}
-	if v.Transition != nil {
+	if waits(v) {
 		return false, nil
 	}
 	if v.RequestFailureReason != nil {
 		return false, fmt.Errorf("the volume was not created: %s", *v.RequestFailureReason)
 	}
-	return v.CurrentExistence != nil && *v.CurrentExistence == api.CurrentExistenceExists, nil
+	if hasStatus(v, api.VolumeStatusFailed) {
+		return false, errors.New("the volume was not created")
+	}
+	return hasStatus(v, api.VolumeStatusAvailable), nil
 }
 
 // Gone reports whether a volume is gone: it left the list, or the API still lists it as Deleted. A delete Incus
-// refused puts the desired existence back to Exists, with nothing pending and the reason set.
+// refused puts the status back to Available (or NotFound), with nothing pending and the reason set.
 func Gone(v *api.VolumeQueryResult) (bool, error) {
 	if v == nil {
 		return true, nil
 	}
-	if v.CurrentExistence != nil && *v.CurrentExistence == api.CurrentExistenceDeleted {
+	if hasStatus(v, api.VolumeStatusDeleted) {
 		return true, nil
 	}
-	refused := v.Transition == nil && v.DesiredExistence != nil && *v.DesiredExistence == api.DesiredExistenceExists &&
-		v.RequestFailureReason != nil
+	refused := !waits(v) && v.RequestFailureReason != nil
 	if refused {
 		return false, fmt.Errorf("the volume was not deleted: %s", *v.RequestFailureReason)
 	}
@@ -59,7 +78,7 @@ func Attached(v *api.VolumeQueryResult, vmId string) (bool, error) {
 	if v == nil {
 		return false, errors.New("the volume is no longer listed")
 	}
-	if v.Transition != nil {
+	if waits(v) {
 		return false, nil
 	}
 	if v.CurrentAttachedVmId != nil && *v.CurrentAttachedVmId == vmId {
@@ -76,7 +95,7 @@ func Detached(v *api.VolumeQueryResult) (bool, error) {
 	if v == nil {
 		return true, nil
 	}
-	if v.Transition != nil {
+	if waits(v) {
 		return false, nil
 	}
 	if v.CurrentAttachedVmId == nil {
@@ -91,11 +110,11 @@ func Detached(v *api.VolumeQueryResult) (bool, error) {
 // Deletable reports whether the API takes a delete now: it refuses one while another request (create, attach, detach)
 // is pending. A pending delete is repeated; a volume no longer listed needs no wait.
 func Deletable(v *api.VolumeQueryResult) bool {
-	return v == nil || v.Transition == nil || *v.Transition == api.VolumeTransitionDeleting
+	return v == nil || !waits(v) || hasStatus(v, api.VolumeStatusDeleting)
 }
 
 // Detachable reports whether the API takes a detach now: it refuses one while another request is pending. A pending
 // detach is repeated; a volume no longer listed needs no wait.
 func Detachable(v *api.VolumeQueryResult) bool {
-	return v == nil || v.Transition == nil || *v.Transition == api.VolumeTransitionDetaching
+	return v == nil || !waits(v) || hasStatus(v, api.VolumeStatusDetaching)
 }

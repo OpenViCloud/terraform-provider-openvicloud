@@ -218,7 +218,7 @@ func (r *loadBalancer) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Reading the load balancer failed", err.Error())
 		return
 	}
-	if status == http.StatusNotFound || (found != nil && found.CurrentExistence != nil && *found.CurrentExistence == api.CurrentExistenceDeleted) {
+	if status == http.StatusNotFound || (found != nil && found.Status != nil && *found.Status == api.LoadBalancerStatusDeleted) {
 		resp.State.RemoveResource(ctx)
 		return
 	}

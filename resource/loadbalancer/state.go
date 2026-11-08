@@ -18,19 +18,40 @@ type Listener struct {
 	TargetPort int32
 }
 
+// waits reports whether a request waits on its command. A load balancer has one status; Creating, Updating and
+// Deleting are the three that wait (titan-ops features/load-balancer/design.md#lb-lifecycle).
+func waits(lb *api.LoadBalancerQueryResult) bool {
+	if lb.Status == nil {
+		return false
+	}
+	switch *lb.Status {
+	case api.LoadBalancerStatusCreating, api.LoadBalancerStatusUpdating, api.LoadBalancerStatusDeleting:
+		return true
+	}
+	return false
+}
+
+func hasStatus(lb *api.LoadBalancerQueryResult, status api.LoadBalancerStatus) bool {
+	return lb.Status != nil && *lb.Status == status
+}
+
 // Created reports whether a create is done: Incus has the load balancer and nothing is pending. A create Incus gave up
-// on keeps the load balancer with the reason set; it is Deleted only when someone deleted it before the create finished.
+// on leaves the load balancer Failed with the reason set; it is Deleted only when someone deleted it before the create
+// finished.
 func Created(lb api.LoadBalancerQueryResult) (bool, error) {
-	if lb.Transition != nil {
+	if waits(&lb) {
 		return false, nil
 	}
 	if lb.RequestFailureReason != nil {
 		return false, fmt.Errorf("the load balancer was not created: %s", *lb.RequestFailureReason)
 	}
-	if lb.CurrentExistence != nil && *lb.CurrentExistence == api.CurrentExistenceDeleted {
+	if hasStatus(&lb, api.LoadBalancerStatusFailed) {
+		return false, errors.New("the load balancer was not created")
+	}
+	if hasStatus(&lb, api.LoadBalancerStatusDeleted) {
 		return false, errors.New("the load balancer was not created: it was deleted before the create finished")
 	}
-	return lb.CurrentExistence != nil && *lb.CurrentExistence == api.CurrentExistenceExists, nil
+	return hasStatus(&lb, api.LoadBalancerStatusAvailable), nil
 }
 
 // Applied reports whether the API holds exactly these listeners and backend VMs, in any order.
@@ -53,7 +74,7 @@ func Applied(lb api.LoadBalancerQueryResult, listeners []Listener, backendVmIds 
 // Updated reports whether an update is done: nothing pending and the API holds the asked configuration. An update
 // given up puts the configuration back to what Incus took, with the reason.
 func Updated(lb api.LoadBalancerQueryResult, listeners []Listener, backendVmIds []string) (bool, error) {
-	if lb.Transition != nil {
+	if waits(&lb) {
 		return false, nil
 	}
 	if Applied(lb, listeners, backendVmIds) {
@@ -67,20 +88,20 @@ func Updated(lb api.LoadBalancerQueryResult, listeners []Listener, backendVmIds 
 
 // Settled reports whether the API takes a new configuration now: it refuses one while another request is pending.
 func Settled(lb api.LoadBalancerQueryResult) bool {
-	return lb.Transition == nil
+	return !waits(&lb)
 }
 
 // Deletable reports whether the API takes a delete now: it refuses one while the create is pending. A delete wins over
 // a pending update and repeats a pending delete; a load balancer not found needs no wait.
 func Deletable(lb *api.LoadBalancerQueryResult) bool {
-	if lb == nil || lb.Transition == nil {
+	if lb == nil {
 		return true
 	}
-	return *lb.Transition == api.LoadBalancerTransitionUpdating || *lb.Transition == api.LoadBalancerTransitionDeleting
+	return !hasStatus(lb, api.LoadBalancerStatusCreating)
 }
 
 // Gone reports whether a load balancer is gone: 404, or the API keeps the row as Deleted. A delete Incus refused puts
-// the desired existence back to Exists, with nothing pending and the reason set.
+// the status back to Available (or NotFound), with nothing pending and the reason set.
 func Gone(status int, lb *api.LoadBalancerQueryResult) (bool, error) {
 	if status == http.StatusNotFound {
 		return true, nil
@@ -88,11 +109,10 @@ func Gone(status int, lb *api.LoadBalancerQueryResult) (bool, error) {
 	if lb == nil {
 		return false, nil
 	}
-	if lb.CurrentExistence != nil && *lb.CurrentExistence == api.CurrentExistenceDeleted {
+	if hasStatus(lb, api.LoadBalancerStatusDeleted) {
 		return true, nil
 	}
-	refused := lb.Transition == nil && lb.DesiredExistence != nil && *lb.DesiredExistence == api.DesiredExistenceExists &&
-		lb.RequestFailureReason != nil
+	refused := !waits(lb) && lb.RequestFailureReason != nil
 	if refused {
 		return false, fmt.Errorf("the load balancer was not deleted: %s", *lb.RequestFailureReason)
 	}

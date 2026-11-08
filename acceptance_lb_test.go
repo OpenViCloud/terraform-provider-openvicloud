@@ -72,8 +72,8 @@ func TestAccLoadBalancer_CreateImportUpdateInPlaceDestroy(t *testing.T) {
 						if err != nil {
 							return err
 						}
-						onIncus := found.JSON200 != nil && found.JSON200.CurrentExistence != nil &&
-							*found.JSON200.CurrentExistence == api.CurrentExistenceExists && found.JSON200.Transition == nil
+						onIncus := found.JSON200 != nil && found.JSON200.Status != nil &&
+							*found.JSON200.Status == api.LoadBalancerStatusAvailable
 						if !onIncus {
 							return fmt.Errorf("the API does not show load balancer %s on Incus with nothing pending", lbId)
 						}
@@ -100,7 +100,8 @@ func TestAccLoadBalancer_CreateImportUpdateInPlaceDestroy(t *testing.T) {
 						if err != nil {
 							return err
 						}
-						if found.JSON200 == nil || found.JSON200.Listeners == nil || len(*found.JSON200.Listeners) != 2 || found.JSON200.Transition != nil {
+						if found.JSON200 == nil || found.JSON200.Listeners == nil || len(*found.JSON200.Listeners) != 2 ||
+							found.JSON200.Status == nil || *found.JSON200.Status != api.LoadBalancerStatusAvailable {
 							return fmt.Errorf("the API does not show two listeners with nothing pending on %s", lbId)
 						}
 						return nil

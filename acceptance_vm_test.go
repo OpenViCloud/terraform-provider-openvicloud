@@ -72,8 +72,8 @@ resource "openvicloud_volume_attachment" "a" {
 func leftovers(client *api.ClientWithResponses, name string) error {
 	ctx := context.Background()
 	var left []string
-	alive := func(kind string, n *string, existence *api.CurrentExistence) {
-		if n != nil && strings.HasPrefix(*n, name) && (existence == nil || *existence != api.CurrentExistenceDeleted) {
+	alive := func(kind string, n *string, deleted bool) {
+		if n != nil && strings.HasPrefix(*n, name) && !deleted {
 			left = append(left, kind+" "+*n)
 		}
 	}
@@ -83,7 +83,7 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 	}
 	for _, v := range *vms.JSON200 {
 		if v.Status == nil || *v.Status != api.VmStatusDeleted {
-			alive("VM", v.Name, nil)
+			alive("VM", v.Name, false)
 		}
 	}
 	volumes, err := client.TitanInfrastructureEndpointsVolumeListVolumesEndpointWithResponse(ctx)
@@ -92,7 +92,7 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 	}
 	for _, v := range *volumes.JSON200 {
 		if v.Status == nil || *v.Status != api.VolumeStatusDeleted {
-			alive("volume", v.Name, nil)
+			alive("volume", v.Name, false)
 		}
 	}
 	keys, err := client.TitanInfrastructureEndpointsSshKeyListSshKeysEndpointWithResponse(ctx)
@@ -100,14 +100,14 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 		return err
 	}
 	for _, k := range *keys.JSON200 {
-		alive("SSH key", k.Name, nil)
+		alive("SSH key", k.Name, false)
 	}
 	balancers, err := client.TitanInfrastructureEndpointsLoadBalancerListLoadBalancersEndpointWithResponse(ctx)
 	if err != nil {
 		return err
 	}
 	for _, lb := range *balancers.JSON200 {
-		alive("load balancer", lb.Name, lb.CurrentExistence)
+		alive("load balancer", lb.Name, lb.Status != nil && *lb.Status == api.LoadBalancerStatusDeleted)
 	}
 	networks, err := client.TitanInfrastructureEndpointsNetworkListNetworksEndpointWithResponse(ctx)
 	if err != nil {
@@ -115,7 +115,7 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 	}
 	for _, n := range *networks.JSON200 {
 		if n.Status == nil || *n.Status != api.NetworkStatusDeleted {
-			alive("network", n.Name, nil)
+			alive("network", n.Name, false)
 		}
 	}
 	if len(left) > 0 {

@@ -9,13 +9,12 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
-func aVolume(id string, existence api.CurrentExistence, transition *api.VolumeTransition) api.VolumeQueryResult {
-	return api.VolumeQueryResult{Id: &id, CurrentExistence: &existence, Transition: transition,
-		DesiredExistence: ptr(api.DesiredExistenceExists)}
+func aVolume(id string, status api.VolumeStatus) api.VolumeQueryResult {
+	return api.VolumeQueryResult{Id: &id, Status: &status}
 }
 
 func TestFind_ById(t *testing.T) {
-	list := []api.VolumeQueryResult{aVolume("a", api.CurrentExistenceExists, nil), aVolume("b", api.CurrentExistenceExists, nil)}
+	list := []api.VolumeQueryResult{aVolume("a", api.VolumeStatusAvailable), aVolume("b", api.VolumeStatusAvailable)}
 	if found := Find(list, "b"); found == nil || *found.Id != "b" {
 		t.Fatalf("found = %v", found)
 	}
@@ -25,7 +24,7 @@ func TestFind_ById(t *testing.T) {
 }
 
 func TestCreated_WhileCreating_KeepsWaiting(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceNotCreated, ptr(api.VolumeTransitionCreating))
+	v := aVolume("a", api.VolumeStatusCreating)
 	done, err := Created(&v)
 	if done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
@@ -33,7 +32,7 @@ func TestCreated_WhileCreating_KeepsWaiting(t *testing.T) {
 }
 
 func TestCreated_Exists_IsDone(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	done, err := Created(&v)
 	if !done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
@@ -41,7 +40,7 @@ func TestCreated_Exists_IsDone(t *testing.T) {
 }
 
 func TestCreated_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceNotCreated, nil)
+	v := aVolume("a", api.VolumeStatusFailed)
 	v.RequestFailureReason = ptr("pool full")
 	_, err := Created(&v)
 	if err == nil || !strings.Contains(err.Error(), "pool full") {
@@ -65,7 +64,7 @@ func TestGone_LeftTheList_IsGone(t *testing.T) {
 }
 
 func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, ptr(api.VolumeTransitionDeleting))
+	v := aVolume("a", api.VolumeStatusDeleting)
 	gone, err := Gone(&v)
 	if gone || err != nil {
 		t.Fatalf("gone = %v, err = %v", gone, err)
@@ -73,7 +72,7 @@ func TestGone_WhileDeleting_KeepsWaiting(t *testing.T) {
 }
 
 func TestGone_DeleteRefused_FailsWithTheReason(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	v.RequestFailureReason = ptr("volume busy")
 	_, err := Gone(&v)
 	if err == nil || !strings.Contains(err.Error(), "volume busy") {
@@ -82,7 +81,7 @@ func TestGone_DeleteRefused_FailsWithTheReason(t *testing.T) {
 }
 
 func TestAttached_ToTheVm_IsDone(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	v.CurrentAttachedVmId = ptr("vm-1")
 	done, err := Attached(&v, "vm-1")
 	if !done || err != nil {
@@ -91,7 +90,7 @@ func TestAttached_ToTheVm_IsDone(t *testing.T) {
 }
 
 func TestAttached_WhileAttaching_KeepsWaiting(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, ptr(api.VolumeTransitionAttaching))
+	v := aVolume("a", api.VolumeStatusAttaching)
 	done, err := Attached(&v, "vm-1")
 	if done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
@@ -99,7 +98,7 @@ func TestAttached_WhileAttaching_KeepsWaiting(t *testing.T) {
 }
 
 func TestAttached_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	v.RequestFailureReason = ptr("VM is stopping")
 	_, err := Attached(&v, "vm-1")
 	if err == nil || !strings.Contains(err.Error(), "VM is stopping") {
@@ -114,7 +113,7 @@ func TestAttached_VolumeLeftTheList_Fails(t *testing.T) {
 }
 
 func TestDetached_NoVm_IsDone(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	done, err := Detached(&v)
 	if !done || err != nil {
 		t.Fatalf("done = %v, err = %v", done, err)
@@ -129,7 +128,7 @@ func TestDetached_VolumeGone_IsDone(t *testing.T) {
 }
 
 func TestDetached_WhileDetaching_KeepsWaiting(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, ptr(api.VolumeTransitionDetaching))
+	v := aVolume("a", api.VolumeStatusDetaching)
 	v.CurrentAttachedVmId = ptr("vm-1")
 	done, err := Detached(&v)
 	if done || err != nil {
@@ -138,7 +137,7 @@ func TestDetached_WhileDetaching_KeepsWaiting(t *testing.T) {
 }
 
 func TestDetached_RequestGivenUp_FailsWithTheReason(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, nil)
+	v := aVolume("a", api.VolumeStatusAvailable)
 	v.CurrentAttachedVmId = ptr("vm-1")
 	v.RequestFailureReason = ptr("device busy")
 	_, err := Detached(&v)
@@ -148,10 +147,10 @@ func TestDetached_RequestGivenUp_FailsWithTheReason(t *testing.T) {
 }
 
 func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
-	for _, transition := range []*api.VolumeTransition{nil, ptr(api.VolumeTransitionDeleting)} {
-		v := aVolume("a", api.CurrentExistenceExists, transition)
+	for _, status := range []api.VolumeStatus{api.VolumeStatusAvailable, api.VolumeStatusNotFound, api.VolumeStatusFailed, api.VolumeStatusDeleting} {
+		v := aVolume("a", status)
 		if !Deletable(&v) {
-			t.Fatalf("transition %v", transition)
+			t.Fatalf("status %v", status)
 		}
 	}
 	if !Deletable(nil) {
@@ -160,19 +159,19 @@ func TestDeletable_AtRestOrDeleting_Goes(t *testing.T) {
 }
 
 func TestDeletable_AnotherRequestPending_Waits(t *testing.T) {
-	for _, transition := range []api.VolumeTransition{api.VolumeTransitionCreating, api.VolumeTransitionAttaching, api.VolumeTransitionDetaching} {
-		v := aVolume("a", api.CurrentExistenceExists, ptr(transition))
+	for _, status := range []api.VolumeStatus{api.VolumeStatusCreating, api.VolumeStatusAttaching, api.VolumeStatusDetaching} {
+		v := aVolume("a", status)
 		if Deletable(&v) {
-			t.Fatalf("the API refuses to delete a volume while %s", transition)
+			t.Fatalf("the API refuses to delete a volume while %s", status)
 		}
 	}
 }
 
 func TestDetachable_AtRestOrDetaching_Goes(t *testing.T) {
-	for _, transition := range []*api.VolumeTransition{nil, ptr(api.VolumeTransitionDetaching)} {
-		v := aVolume("a", api.CurrentExistenceExists, transition)
+	for _, status := range []api.VolumeStatus{api.VolumeStatusAvailable, api.VolumeStatusDetaching} {
+		v := aVolume("a", status)
 		if !Detachable(&v) {
-			t.Fatalf("transition %v", transition)
+			t.Fatalf("status %v", status)
 		}
 	}
 	if !Detachable(nil) {
@@ -181,8 +180,23 @@ func TestDetachable_AtRestOrDetaching_Goes(t *testing.T) {
 }
 
 func TestDetachable_WhileAttaching_Waits(t *testing.T) {
-	v := aVolume("a", api.CurrentExistenceExists, ptr(api.VolumeTransitionAttaching))
+	v := aVolume("a", api.VolumeStatusAttaching)
 	if Detachable(&v) {
 		t.Fatal("the API refuses to detach a volume whose attach is pending")
+	}
+}
+
+func TestCreated_FailedWithoutAReason_StillFails(t *testing.T) {
+	v := aVolume("a", api.VolumeStatusFailed)
+	if _, err := Created(&v); err == nil {
+		t.Fatal("a failed create is not created, reason or not")
+	}
+}
+
+func TestGone_Deleted_IsGone(t *testing.T) {
+	v := aVolume("a", api.VolumeStatusDeleted)
+	gone, err := Gone(&v)
+	if !gone || err != nil {
+		t.Fatalf("gone = %v, err = %v", gone, err)
 	}
 }

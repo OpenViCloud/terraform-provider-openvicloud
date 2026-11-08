@@ -150,7 +150,7 @@ func (r *volume) Read(ctx context.Context, req resource.ReadRequest, resp *resou
 		resp.Diagnostics.AddError("Reading the volume failed", err.Error())
 		return
 	}
-	if found == nil || (found.CurrentExistence != nil && *found.CurrentExistence == api.CurrentExistenceDeleted) {
+	if found == nil || (found.Status != nil && *found.Status == api.VolumeStatusDeleted) {
 		resp.State.RemoveResource(ctx)
 		return
 	}

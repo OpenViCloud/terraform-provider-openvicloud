@@ -91,7 +91,9 @@ func leftovers(client *api.ClientWithResponses, name string) error {
 		return err
 	}
 	for _, v := range *volumes.JSON200 {
-		alive("volume", v.Name, v.CurrentExistence)
+		if v.Status == nil || *v.Status != api.VolumeStatusDeleted {
+			alive("volume", v.Name, nil)
+		}
 	}
 	keys, err := client.TitanInfrastructureEndpointsSshKeyListSshKeysEndpointWithResponse(ctx)
 	if err != nil {

@@ -101,7 +101,7 @@ func TestAccLoadBalancer_CreateImportUpdateInPlaceDestroy(t *testing.T) {
 							return err
 						}
 						if found.JSON200 == nil || found.JSON200.Listeners == nil || len(*found.JSON200.Listeners) != 2 ||
-							(found.JSON200.Status != nil && *found.JSON200.Status == api.LoadBalancerStatusUpdating) {
+							found.JSON200.Status == nil || *found.JSON200.Status != api.LoadBalancerStatusAvailable {
 							return fmt.Errorf("the API does not show two listeners with nothing pending on %s", lbId)
 						}
 						return nil

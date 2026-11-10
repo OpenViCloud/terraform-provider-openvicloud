@@ -24,7 +24,6 @@ The VM sizes and their price per hour in VND.
 
 Read-Only:
 
-- `cpu` (String) CPU units, exact decimal.
 - `id` (String)
 - `memory_mb` (Number)
 - `name` (String)

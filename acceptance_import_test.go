@@ -65,7 +65,7 @@ func makeOutsideTerraform(t *testing.T, client *api.ClientWithResponses, name, p
 	keys := []string{made.keyId}
 	machine, err := client.TitanInfrastructureEndpointsVmCreateVmEndpointWithResponse(ctx,
 		&api.TitanInfrastructureEndpointsVmCreateVmEndpointParams{IdempotencyKey: api.NewIdempotencyKey()},
-		api.CreateVmCommand{Name: name, ClusterId: z, NetworkId: made.networkId, TemplateId: made.templateId,
+		api.CreateVmCommand{Name: name, ClusterId: &z, NetworkId: made.networkId, TemplateId: made.templateId,
 			VmOfferingId: "s", SshKeyIds: &keys, UserData: &userData})
 	if err != nil || machine.JSON202 == nil {
 		t.Fatalf("creating the VM: %v %s", err, machine.Body)

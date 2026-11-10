@@ -23,14 +23,7 @@ func whole(value *int32) types.Int64 {
 	return types.Int64Value(int64(*value))
 }
 
-func yesNo(value *bool) types.Bool {
-	if value == nil {
-		return types.BoolNull()
-	}
-	return types.BoolValue(*value)
-}
-
-// exact keeps a decimal (a price, CPU units) as the digits the API sent: a float would round VND prices.
+// exact keeps a decimal (a price) as the digits the API sent: a float would round VND prices.
 func exact(value *json.Number) types.String {
 	if value == nil {
 		return types.StringNull()

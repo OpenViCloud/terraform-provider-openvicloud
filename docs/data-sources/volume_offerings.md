@@ -25,7 +25,5 @@ The volume sizes and their price per GB per hour in VND.
 Read-Only:
 
 - `id` (String)
-- `is_customized` (Boolean)
 - `name` (String)
 - `price_per_gb_per_hour` (String) VND per GB per hour, exact decimal.
-- `size_gb` (Number)

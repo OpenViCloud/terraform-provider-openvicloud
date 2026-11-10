@@ -3,12 +3,12 @@
 page_title: "openvicloud_volume_offerings Data Source - openvicloud"
 subcategory: ""
 description: |-
-  The volume sizes and their price per GB per hour in VND.
+  The kinds of volume and their price per GB per hour in VND.
 ---
 
 # openvicloud_volume_offerings (Data Source)
 
-The volume sizes and their price per GB per hour in VND.
+The kinds of volume and their price per GB per hour in VND.
 
 
 
@@ -25,7 +25,5 @@ The volume sizes and their price per GB per hour in VND.
 Read-Only:
 
 - `id` (String)
-- `is_customized` (Boolean)
 - `name` (String)
 - `price_per_gb_per_hour` (String) VND per GB per hour, exact decimal.
-- `size_gb` (Number)

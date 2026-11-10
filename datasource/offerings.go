@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Prices and CPU units are strings: they keep every digit the API sent (VND, per hour).
+// Prices are strings: they keep every digit the API sent (VND, per hour).
 
 type vmOfferings struct{ client *api.ClientWithResponses }
 
@@ -20,7 +20,6 @@ type vmOfferingsModel struct {
 type vmOfferingModel struct {
 	Id           types.String `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
-	Cpu          types.String `tfsdk:"cpu"`
 	Vcpu         types.Int64  `tfsdk:"vcpu"`
 	MemoryMb     types.Int64  `tfsdk:"memory_mb"`
 	PricePerHour types.String `tfsdk:"price_per_hour"`
@@ -41,7 +40,6 @@ func (d *vmOfferings) Schema(ctx context.Context, req datasource.SchemaRequest, 
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"id":             schema.StringAttribute{Computed: true},
 					"name":           schema.StringAttribute{Computed: true},
-					"cpu":            schema.StringAttribute{Computed: true, Description: "CPU units, exact decimal."},
 					"vcpu":           schema.Int64Attribute{Computed: true},
 					"memory_mb":      schema.Int64Attribute{Computed: true},
 					"price_per_hour": schema.StringAttribute{Computed: true, Description: "VND per hour, exact decimal."},
@@ -68,7 +66,7 @@ func (d *vmOfferings) Read(ctx context.Context, req datasource.ReadRequest, resp
 	state := vmOfferingsModel{Offerings: []vmOfferingModel{}}
 	for _, offering := range *response.JSON200 {
 		state.Offerings = append(state.Offerings, vmOfferingModel{
-			Id: text(offering.Id), Name: text(offering.Name), Cpu: exact(offering.Cpu), Vcpu: whole(offering.Vcpu),
+			Id: text(offering.Id), Name: text(offering.Name), Vcpu: whole(offering.Vcpu),
 			MemoryMb: whole(offering.MemoryMb), PricePerHour: exact(offering.PricePerHour),
 		})
 	}
@@ -84,8 +82,6 @@ type volumeOfferingsModel struct {
 type volumeOfferingModel struct {
 	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
-	SizeGb            types.Int64  `tfsdk:"size_gb"`
-	IsCustomized      types.Bool   `tfsdk:"is_customized"`
 	PricePerGbPerHour types.String `tfsdk:"price_per_gb_per_hour"`
 }
 
@@ -97,15 +93,13 @@ func (d *volumeOfferings) Metadata(ctx context.Context, req datasource.MetadataR
 
 func (d *volumeOfferings) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "The volume sizes and their price per GB per hour in VND.",
+		Description: "The kinds of volume and their price per GB per hour in VND.",
 		Attributes: map[string]schema.Attribute{
 			"volume_offerings": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
 					"id":                    schema.StringAttribute{Computed: true},
 					"name":                  schema.StringAttribute{Computed: true},
-					"size_gb":               schema.Int64Attribute{Computed: true},
-					"is_customized":         schema.BoolAttribute{Computed: true},
 					"price_per_gb_per_hour": schema.StringAttribute{Computed: true, Description: "VND per GB per hour, exact decimal."},
 				}},
 			},
@@ -130,8 +124,7 @@ func (d *volumeOfferings) Read(ctx context.Context, req datasource.ReadRequest, 
 	state := volumeOfferingsModel{Offerings: []volumeOfferingModel{}}
 	for _, offering := range *response.JSON200 {
 		state.Offerings = append(state.Offerings, volumeOfferingModel{
-			Id: text(offering.Id), Name: text(offering.Name), SizeGb: whole(offering.SizeGb),
-			IsCustomized: yesNo(offering.IsCustomized), PricePerGbPerHour: exact(offering.PricePerGbPerHour),
+			Id: text(offering.Id), Name: text(offering.Name), PricePerGbPerHour: exact(offering.PricePerGbPerHour),
 		})
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

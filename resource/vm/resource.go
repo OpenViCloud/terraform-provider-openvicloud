@@ -130,7 +130,7 @@ func (r *vm) Create(ctx context.Context, req resource.CreateRequest, resp *resou
 		return
 	}
 	body := api.CreateVmCommand{
-		Name: plan.Name.ValueString(), ClusterId: plan.ClusterId.ValueString(), NetworkId: plan.NetworkId.ValueString(),
+		Name: plan.Name.ValueString(), ClusterId: plan.ClusterId.ValueStringPointer(), NetworkId: plan.NetworkId.ValueString(),
 		TemplateId: plan.TemplateId.ValueString(), VmOfferingId: plan.VmOfferingId.ValueString(),
 	}
 	if !plan.DiskSizeGb.IsNull() && !plan.DiskSizeGb.IsUnknown() {

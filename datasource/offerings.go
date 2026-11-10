@@ -93,7 +93,7 @@ func (d *volumeOfferings) Metadata(ctx context.Context, req datasource.MetadataR
 
 func (d *volumeOfferings) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "The volume sizes and their price per GB per hour in VND.",
+		Description: "The kinds of volume and their price per GB per hour in VND.",
 		Attributes: map[string]schema.Attribute{
 			"volume_offerings": schema.ListNestedAttribute{
 				Computed: true,

@@ -241,8 +241,8 @@ func (r *vm) Update(ctx context.Context, req resource.UpdateRequest, resp *resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Name is the only attribute that changes in place; ssh_key_ids and console_password reach here only after an
-	// import, to be recorded.
+	// Name is the only attribute that changes in place; ssh_key_ids reaches here only after an import, and
+	// console_password only after an import or a provider upgrade, to be recorded.
 	if !plan.Name.Equal(state.Name) {
 		response, err := r.client.TitanInfrastructureEndpointsVmUpdateVmEndpointWithResponse(ctx, state.Id.ValueString(),
 			api.RenameVmBody{Name: plan.Name.ValueString()})

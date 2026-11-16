@@ -203,7 +203,7 @@ import {
 
 func TestVmConsolePassword_OutsideTwelveToSeventyTwo_IsRefusedAtPlan(t *testing.T) {
 	f := newFakeVmApi(t)
-	// Characters, as the API counts them, not bytes: six letters with a diacritic are 18 bytes and still too short.
+	// Characters, not bytes, as the API counts letters with a diacritic: six of them are 18 bytes and still too short.
 	for _, password := range []string{strings.Repeat("a", 11), strings.Repeat("a", 73), strings.Repeat("ả", 6), strings.Repeat("ả", 73)} {
 		resource.UnitTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: factories,

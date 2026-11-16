@@ -70,7 +70,8 @@ is created when it is Running or Ready.
 
 Terraform declares what exists, not whether a VM is on: stop and start a VM with the `openvicloud` CLI or the
 portal, and Terraform leaves it as it is. Only a VM's name changes in place; any other change replaces the VM, apart
-from what an import or a provider upgrade records, below.
+from values the API never returns, which an import (`ssh_key_ids`, `console_password`) or a provider upgrade
+(`console_password`) only records in state.
 
 `console_password` is the password of user `ubuntu` on the VM's console; set it from a sensitive variable, never in a
 `.tf` file. A VM whose state holds none yet (imported, or created by a provider version without this attribute) only

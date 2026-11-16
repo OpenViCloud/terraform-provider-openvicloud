@@ -83,7 +83,9 @@ func (r *vm) Schema(ctx context.Context, req resource.SchemaRequest, resp *resou
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	resp.Schema = schema.Schema{
-		Description: "A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. " +
+		Description: "A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart " +
+			"from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade " +
+			"(console_password) only records in state. " +
 			"Power is not managed here: stop and start a VM with the CLI or the portal.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{Computed: true, PlanModifiers: keep},

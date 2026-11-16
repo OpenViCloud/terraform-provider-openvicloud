@@ -3,12 +3,12 @@
 page_title: "openvicloud_vm Resource - openvicloud"
 subcategory: ""
 description: |-
-  A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. Power is not managed here: stop and start a VM with the CLI or the portal.
+  A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade (console_password) only records in state. Power is not managed here: stop and start a VM with the CLI or the portal.
 ---
 
 # openvicloud_vm (Resource)
 
-A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. Power is not managed here: stop and start a VM with the CLI or the portal.
+A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade (console_password) only records in state. Power is not managed here: stop and start a VM with the CLI or the portal.
 
 ## Example Usage
 

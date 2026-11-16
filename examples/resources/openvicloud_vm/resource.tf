@@ -7,6 +7,12 @@ resource "openvicloud_ssh_key" "me" {
   public_key = file("~/.ssh/id_ed25519.pub")
 }
 
+# Set it with TF_VAR_console_password, never in a .tf file.
+variable "console_password" {
+  type      = string
+  sensitive = true
+}
+
 resource "openvicloud_vm" "web" {
   name           = "web-1"
   cluster_id     = "singapore01"
@@ -14,4 +20,6 @@ resource "openvicloud_vm" "web" {
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
   ssh_key_ids    = [openvicloud_ssh_key.me.id]
+
+  console_password = var.console_password
 }

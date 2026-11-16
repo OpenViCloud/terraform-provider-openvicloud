@@ -25,6 +25,12 @@ jobs:
         with:
           go-version: '1.26'
 
+      # Unit tests run Terraform itself; without it on the runner, the test framework would download the latest one.
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+
       - name: Test
         run: go test ./... -count=1
 

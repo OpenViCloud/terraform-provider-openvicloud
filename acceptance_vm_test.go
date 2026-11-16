@@ -189,7 +189,7 @@ func TestAccVmWithKeyAndVolume_CreateImportRenameDestroy(t *testing.T) {
 			},
 			{
 				ResourceName: "openvicloud_vm.v", ImportState: true, ImportStateVerify: true,
-				// The API never returns the keys nor the console password a VM was created with.
+				// The API returns neither the keys nor the console password a VM was created with.
 				ImportStateVerifyIgnore: []string{"ssh_key_ids", "console_password"},
 			},
 			{ResourceName: "openvicloud_volume.d", ImportState: true, ImportStateVerify: true},

@@ -53,7 +53,7 @@ resource "openvicloud_vm" "web" {
 
 ### Optional
 
-- `console_password` (String, Sensitive) Password of user ubuntu on the VM's serial console, 12 to 72 characters; no password when not set. The API keeps only a hash and never returns it; Terraform keeps it in state like other sensitive values. A change replaces the VM, except when the state holds none yet (after an import, or for a VM created before this attribute existed): then it is only recorded.
+- `console_password` (String, Sensitive) Password of user ubuntu on the VM's serial console, 12 to 72 characters; no password when not set. The API keeps only a hash and never returns it; Terraform keeps it in state like other sensitive values. A change replaces the VM. When the state holds none yet (after an import, or after upgrading from a provider version without this attribute), the next apply only records the configured value: the VM keeps the console password it has, and `terraform apply -replace` sets the new one.
 - `disk_size_gb` (Number) Root disk size; the template's own size when not set (shown as 0).
 - `ssh_key_ids` (Set of String) SSH keys (openvicloud_ssh_key) that may log in as user ubuntu.
 - `user_data` (String, Sensitive) cloud-init user data, up to 32768 bytes.

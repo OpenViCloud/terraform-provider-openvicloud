@@ -71,6 +71,11 @@ is created when it is Running or Ready.
 Terraform declares what exists, not whether a VM is on: stop and start a VM with the `openvicloud` CLI or the
 portal, and Terraform leaves it as it is. Only a VM's name changes in place; any other change replaces the VM.
 
+`console_password` is the password of user `ubuntu` on the VM's console; set it from a sensitive variable, never in a
+`.tf` file. A VM whose state holds none yet (imported, or created by a provider version without this attribute) only
+records it on the next apply and keeps the console password it has: `terraform apply -replace` sets a new one.
+Upgrading to the first version with `console_password` plans one in-place update per VM, never a replacement.
+
 A load balancer (on a network with `enable_public_ipv6 = true`) changes its name, listeners and backend VMs in place
 and keeps its VIP. OpenViCloud refuses to delete a VM a load balancer still sends to, so to replace such a VM, first
 remove it from `backend_vm_ids` and apply, then make the change that replaces it.

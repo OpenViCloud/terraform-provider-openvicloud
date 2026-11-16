@@ -203,7 +203,8 @@ import {
 
 func TestVmConsolePassword_OutsideTwelveToSeventyTwo_IsRefusedAtPlan(t *testing.T) {
 	f := newFakeVmApi(t)
-	for _, password := range []string{strings.Repeat("a", 11), strings.Repeat("a", 73)} {
+	// Characters, as the API counts them, not bytes: six letters with a diacritic are 18 bytes and still too short.
+	for _, password := range []string{strings.Repeat("a", 11), strings.Repeat("a", 73), strings.Repeat("ả", 6), strings.Repeat("ả", 73)} {
 		resource.UnitTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: factories,
 			Steps: []resource.TestStep{{
@@ -216,4 +217,16 @@ func TestVmConsolePassword_OutsideTwelveToSeventyTwo_IsRefusedAtPlan(t *testing.
 	if f.lastCreate() != nil {
 		t.Fatalf("a create reached the API: %v", f.lastCreate())
 	}
+}
+
+func TestVmConsolePassword_Of72CharactersWithDiacritics_PassesThePlan(t *testing.T) {
+	f := newFakeVmApi(t)
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: factories,
+		Steps: []resource.TestStep{{
+			Config:             consolePasswordConfig(f.server.URL, strings.Repeat("ả", 72)),
+			PlanOnly:           true,
+			ExpectNonEmptyPlan: true,
+		}},
+	})
 }

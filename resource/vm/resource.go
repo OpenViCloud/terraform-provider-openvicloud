@@ -121,9 +121,10 @@ func (r *vm) Schema(ctx context.Context, req resource.SchemaRequest, resp *resou
 				Default: stringdefault.StaticString(""),
 				Description: "Password of user ubuntu on the VM's serial console, 12 to 72 characters; no password when not set. " +
 					"The API keeps only a hash and never returns it; Terraform keeps it in state like other sensitive values. " +
-					"A change replaces the VM, except when the state holds none yet (after an import, or for a VM created before " +
-					"this attribute existed): then it is only recorded.",
-				Validators: []validator.String{stringvalidator.LengthBetween(minConsolePassword, maxConsolePassword)},
+					"A change replaces the VM. When the state holds none yet (after an import, or after upgrading from a provider " +
+					"version without this attribute), the next apply only records the configured value: the VM keeps the console " +
+					"password it has, and `terraform apply -replace` sets the new one.",
+				Validators: []validator.String{stringvalidator.UTF8LengthBetween(minConsolePassword, maxConsolePassword)},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(passwordReplaceUnlessImported,
 					"replaced when the console password changes", "replaced when the console password changes")},
 			},

@@ -3,12 +3,12 @@
 page_title: "openvicloud_vm Resource - openvicloud"
 subcategory: ""
 description: |-
-  A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. Power is not managed here: stop and start a VM with the CLI or the portal.
+  A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade (console_password) only records in state. Power is not managed here: stop and start a VM with the CLI or the portal.
 ---
 
 # openvicloud_vm (Resource)
 
-A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. Power is not managed here: stop and start a VM with the CLI or the portal.
+A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade (console_password) only records in state. Power is not managed here: stop and start a VM with the CLI or the portal.
 
 ## Example Usage
 
@@ -22,6 +22,12 @@ resource "openvicloud_ssh_key" "me" {
   public_key = file("~/.ssh/id_ed25519.pub")
 }
 
+# Set it with TF_VAR_console_password, never in a .tf file.
+variable "console_password" {
+  type      = string
+  sensitive = true
+}
+
 resource "openvicloud_vm" "web" {
   name           = "web-1"
   cluster_id     = "singapore01"
@@ -29,6 +35,8 @@ resource "openvicloud_vm" "web" {
   template_id    = data.openvicloud_templates.here.templates[0].id
   vm_offering_id = "s"
   ssh_key_ids    = [openvicloud_ssh_key.me.id]
+
+  console_password = var.console_password
 }
 ```
 
@@ -45,6 +53,7 @@ resource "openvicloud_vm" "web" {
 
 ### Optional
 
+- `console_password` (String, Sensitive) Password of user ubuntu on the VM's serial console, 12 to 72 characters; no password when not set. The API keeps only a hash and never returns it; Terraform keeps it in state like other sensitive values. A change replaces the VM. When the state holds none yet (after an import, or after upgrading from a provider version without this attribute), the next apply only records the configured value: the VM keeps the console password it has, and `terraform apply -replace` sets the new one.
 - `disk_size_gb` (Number) Root disk size; the template's own size when not set (shown as 0).
 - `ssh_key_ids` (Set of String) SSH keys (openvicloud_ssh_key) that may log in as user ubuntu.
 - `user_data` (String, Sensitive) cloud-init user data, up to 32768 bytes.

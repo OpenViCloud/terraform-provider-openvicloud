@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,6 +32,9 @@ const (
 	maxSshKeys = 10
 	// The API refuses user data longer than this, counted in UTF-8 bytes.
 	maxUserDataBytes = 32768
+	// The API takes a console password of this many characters, of any kind.
+	minConsolePassword = 12
+	maxConsolePassword = 72
 )
 
 var realClock = wait.Clock{Now: time.Now, Sleep: time.Sleep}
@@ -47,6 +51,7 @@ type model struct {
 	DiskSizeGb        types.Int32  `tfsdk:"disk_size_gb"`
 	SshKeyIds         types.Set    `tfsdk:"ssh_key_ids"`
 	UserData          types.String `tfsdk:"user_data"`
+	ConsolePassword   types.String `tfsdk:"console_password"`
 	IpAddress         types.String `tfsdk:"ip_address"`
 	PublicIpv6Address types.String `tfsdk:"public_ipv6_address"`
 }
@@ -68,11 +73,19 @@ func replaceUnlessImported(ctx context.Context, req planmodifier.SetRequest, res
 	resp.RequiresReplace = !req.StateValue.IsNull()
 }
 
+// passwordReplaceUnlessImported does the same for the console password, which the API never returns either. A VM made
+// by a provider version without the attribute has none in state too, and keeps its VM.
+func passwordReplaceUnlessImported(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+	resp.RequiresReplace = !req.StateValue.IsNull()
+}
+
 func (r *vm) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	keep := []planmodifier.String{stringplanmodifier.UseStateForUnknown()}
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	resp.Schema = schema.Schema{
-		Description: "A virtual machine of the tenant. Only name changes in place; any other change replaces the VM. " +
+		Description: "A virtual machine of the tenant. Only name changes in place; any other change replaces the VM, apart " +
+			"from values the API never returns, which an import (ssh_key_ids, console_password) or a provider upgrade " +
+			"(console_password) only records in state. " +
 			"Power is not managed here: stop and start a VM with the CLI or the portal.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{Computed: true, PlanModifiers: keep},
@@ -104,6 +117,18 @@ func (r *vm) Schema(ctx context.Context, req resource.SchemaRequest, resp *resou
 				Optional: true, Sensitive: true, PlanModifiers: replace,
 				Description: "cloud-init user data, up to 32768 bytes.",
 				Validators:  []validator.String{stringvalidator.LengthAtMost(maxUserDataBytes)},
+			},
+			"console_password": schema.StringAttribute{
+				Optional: true, Computed: true, Sensitive: true,
+				Default: stringdefault.StaticString(""),
+				Description: "Password of user ubuntu on the VM's serial console, 12 to 72 characters; no password when not set. " +
+					"The API keeps only a hash and never returns it; Terraform keeps it in state like other sensitive values. " +
+					"A change replaces the VM. When the state holds none yet (after an import, or after upgrading from a provider " +
+					"version without this attribute), the next apply only records the configured value: the VM keeps the console " +
+					"password it has, and `terraform apply -replace` sets the new one.",
+				Validators: []validator.String{stringvalidator.UTF8LengthBetween(minConsolePassword, maxConsolePassword)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIf(passwordReplaceUnlessImported,
+					"replaced when the console password changes", "replaced when the console password changes")},
 			},
 			"ip_address":          schema.StringAttribute{Computed: true, PlanModifiers: keep, Description: "Private IPv4 address."},
 			"public_ipv6_address": schema.StringAttribute{Computed: true, PlanModifiers: keep, Description: "Public IPv6 address, when the network has a public /64."},
@@ -140,6 +165,10 @@ func (r *vm) Create(ctx context.Context, req resource.CreateRequest, resp *resou
 	if !plan.UserData.IsNull() {
 		userData := plan.UserData.ValueString()
 		body.UserData = &userData
+	}
+	if plan.ConsolePassword.ValueString() != "" {
+		password := plan.ConsolePassword.ValueString()
+		body.ConsolePassword = &password
 	}
 	var keys []string
 	resp.Diagnostics.Append(plan.SshKeyIds.ElementsAs(ctx, &keys, false)...)
@@ -214,7 +243,8 @@ func (r *vm) Update(ctx context.Context, req resource.UpdateRequest, resp *resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Name is the only attribute that changes in place; ssh_key_ids reaches here only after an import, to be recorded.
+	// Name is the only attribute that changes in place; ssh_key_ids reaches here only after an import, and
+	// console_password only after an import or a provider upgrade, to be recorded.
 	if !plan.Name.Equal(state.Name) {
 		response, err := r.client.TitanInfrastructureEndpointsVmUpdateVmEndpointWithResponse(ctx, state.Id.ValueString(),
 			api.RenameVmBody{Name: plan.Name.ValueString()})
@@ -229,6 +259,7 @@ func (r *vm) Update(ctx context.Context, req resource.UpdateRequest, resp *resou
 	}
 	state.Name = plan.Name
 	state.SshKeyIds = plan.SshKeyIds
+	state.ConsolePassword = plan.ConsolePassword
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -280,7 +311,7 @@ func (r *vm) ImportState(ctx context.Context, req resource.ImportStateRequest, r
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-// fill copies what the API returns; ssh_key_ids stays as configured (the API never returns them).
+// fill copies what the API returns; ssh_key_ids and console_password stay as configured (the API never returns them).
 func fill(m *model, v api.VmQueryResult) {
 	m.Id = text(v.Id)
 	m.Name = text(v.Name)

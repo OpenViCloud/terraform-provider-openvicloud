@@ -135,6 +135,8 @@ func TestAccNetworkAndRules_CreateImportRenameDestroy(t *testing.T) {
 					resource.TestCheckResourceAttr("openvicloud_network.n", "name", name),
 					resource.TestCheckResourceAttrSet("openvicloud_network.n", "cidr"),
 					resource.TestCheckResourceAttrSet("openvicloud_network.n", "gateway"),
+					resource.TestCheckResourceAttr("openvicloud_network.n", "default_ingress_policy", "Deny"),
+					resource.TestCheckResourceAttr("openvicloud_network.n", "default_egress_policy", "Allow"),
 					resource.TestCheckResourceAttr("openvicloud_firewall_rule.ssh", "start_port", "22"),
 					resource.TestCheckNoResourceAttr("openvicloud_firewall_rule.ping", "start_port"),
 					func(s *terraform.State) error {

@@ -31,8 +31,8 @@ resource "openvicloud_network" "web" {
 ### Optional
 
 - `cidr` (String) IPv4 range of the network; chosen by OpenViCloud when not set.
-- `default_egress_policy` (String) Allow or Deny: what happens to outbound traffic no firewall rule matches.
-- `default_ingress_policy` (String) Allow or Deny: what happens to inbound traffic no firewall rule matches.
+- `default_egress_policy` (String) Allow or Deny: what happens to outbound traffic no firewall rule matches, including traffic between VMs of the network. Not set: Allow.
+- `default_ingress_policy` (String) Allow or Deny: what happens to inbound traffic from outside the network that no firewall rule matches. Not set: Deny. VMs of the same network reach each other either way. Allow lets traffic from outside reach every port of the VMs.
 - `enable_public_ipv6` (Boolean) Give the network a public IPv6 /64 of its cluster.
 
 ### Read-Only

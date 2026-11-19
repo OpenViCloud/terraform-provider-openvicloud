@@ -84,11 +84,11 @@ func (r *network) Schema(ctx context.Context, req resource.SchemaRequest, resp *
 			"gateway": schema.StringAttribute{Computed: true, PlanModifiers: keep},
 			"default_ingress_policy": schema.StringAttribute{
 				Optional: true, Computed: true, PlanModifiers: replaceOrKeep, Validators: policy,
-				Description: "Allow or Deny: what happens to inbound traffic no firewall rule matches.",
+				Description: "Allow or Deny: what happens to inbound traffic from outside the network that no firewall rule matches. Not set: Deny. VMs of the same network reach each other either way. Allow lets traffic from outside reach every port of the VMs.",
 			},
 			"default_egress_policy": schema.StringAttribute{
 				Optional: true, Computed: true, PlanModifiers: replaceOrKeep, Validators: policy,
-				Description: "Allow or Deny: what happens to outbound traffic no firewall rule matches.",
+				Description: "Allow or Deny: what happens to outbound traffic no firewall rule matches, including traffic between VMs of the network. Not set: Allow.",
 			},
 			"enable_public_ipv6": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(false),
